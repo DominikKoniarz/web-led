@@ -1,0 +1,15 @@
+CompileFlags:
+    Remove:
+        - -fstrict-volatile-bitfields
+        - -fno-tree-switch-conversion
+        - -fno-shrink-wrap
+        - -mlongcalls
+        - -mfix-esp32-psram-cache-issue
+        - -mfix-esp32-psram-cache-strategy
+
+Diagnostics:
+    Suppress:
+        # Arduino specific
+        - unknown_typename
+        - redefinition_different_typedef
+        - field_incomplete_or_sizeless

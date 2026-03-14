@@ -4,6 +4,10 @@
     "packageManager": "pnpm@10.15.1",
     "scripts": {
         "build": "pnpm --filter web build",
-        "dev": "pnpm --filter web dev"
+        "dev": "pnpm --filter web dev",
+        "pio:build": "pio run",
+        "pio:upload": "pio run -t upload",
+        "pio:monitor": "pio run -t monitor",
+        "pio:compiledb": "pio run -t compiledb"
     }
 }
