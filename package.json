@@ -1,0 +1,9 @@
+{
+    "name": "WebLED",
+    "private": true,
+    "packageManager": "pnpm@10.15.1",
+    "scripts": {
+        "build": "pnpm --filter web build",
+        "dev": "pnpm --filter web dev"
+    }
+}
