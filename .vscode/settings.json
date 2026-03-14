@@ -1,4 +1,6 @@
 {
     "C_Cpp.intelliSenseEngine": "disabled",
-    "clangd.path": "clangd"
+    "clangd.path": "clangd",
+
+    "prettier.configPath": "./prettier.config.json"
 }
