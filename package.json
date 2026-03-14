@@ -8,6 +8,7 @@
         "pio:build": "pio run",
         "pio:upload": "pio run -t upload",
         "pio:monitor": "pio run -t monitor",
+        "pio:fs:upload": "pio run -t uploadfs",
         "pio:compiledb": "pio run -t compiledb"
     },
     "devDependencies": {
