@@ -10,6 +10,7 @@ export default defineConfig({
         tailwindcss(),
         compression({
             algorithms: ["br"],
+            deleteOriginalAssets: true,
         }),
     ],
     build: {
