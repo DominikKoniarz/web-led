@@ -14,13 +14,21 @@ function App() {
     return (
         <div className="bg-red-500 px-2 text-white">
             <h1>Hello World a</h1>
-            <button onClick={() => setCount((prev) => prev + 1)}>
+            <button
+                className="cursor-pointer"
+                onClick={() => setCount((prev) => prev + 1)}
+            >
                 Increment
             </button>
-            <button onClick={() => setCount((prev) => prev - 1)}>
+            <button
+                className="cursor-pointer"
+                onClick={() => setCount((prev) => prev - 1)}
+            >
                 Decrement
             </button>
-            <button onClick={() => setCount(0)}>Reset</button>
+            <button className="cursor-pointer" onClick={() => setCount(0)}>
+                Reset
+            </button>
             <p>Count: {count}</p>
         </div>
     );

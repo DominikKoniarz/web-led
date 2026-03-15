@@ -12,7 +12,7 @@ static void handleRoot(AsyncWebServerRequest *request) {
     if (!f || f.isDirectory()) {
         if (f)
             f.close();
-        request->send(500, "text/plain", "File not found");
+        request->send(404);
         return;
     }
 
@@ -88,8 +88,11 @@ static void handleHealth(AsyncWebServerRequest *request) {
     json += ",\"wifi_rssi\":" + String(WiFi.RSSI());
     json += ",\"wifi_ssid\":\"" + WiFi.SSID() + "\"";
     json += ",\"wifi_ip\":\"" + WiFi.localIP().toString() + "\"";
+    json += ",\"wifi_mac\":\"" + WiFi.macAddress() + "\"";
+    json += ",\"wifi_channel\":" + String(WiFi.channel());
     json += ",\"free_heap\":" + String(ESP.getFreeHeap());
     json += "}";
+
     request->send(200, "application/json", json);
 }
 
