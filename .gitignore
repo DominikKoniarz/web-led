@@ -6,3 +6,11 @@ dist
 
 # cache
 .cache
+
+# compiledb
+compile_commands.json
+
+# env
+esp/include/secrets.h
+.env*
+!.env.example

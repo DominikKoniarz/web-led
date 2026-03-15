@@ -1,5 +1,10 @@
 {
     "C_Cpp.intelliSenseEngine": "disabled",
+    // "C_Cpp.default.configurationProvider": "platformio.platformio-ide",
+    // "C_Cpp.default.includePath": [
+    //     "${workspaceFolder}/esp/include",
+    //     "${workspaceFolder}/esp/src"
+    // ],
     "clangd.path": "clangd",
 
     "prettier.configPath": "./prettier.config.json"

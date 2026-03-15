@@ -9,8 +9,9 @@ export default defineConfig({
         react(),
         tailwindcss(),
         compression({
-            algorithms: ["br"],
+            algorithms: ["gz"],
             deleteOriginalAssets: true,
+            exclude: [/index\.html$/],
         }),
     ],
     build: {

@@ -9,7 +9,20 @@ CompileFlags:
 
 Diagnostics:
     Suppress:
-        # Arduino specific
+        # Arduino / PlatformIO libs (clang can't resolve toolchain headers)
         - unknown_typename
         - redefinition_different_typedef
         - field_incomplete_or_sizeless
+        - pp_file_not_found
+        - undeclared_identifier
+        - err_undeclared_var_use
+        # ESPAsyncWebServer 3.10 uses AsyncURIMatcher; clang often mis-resolves overload
+        - err_ovl_no_viable_function_in_call
+        - ovl_no_viable_member_function_in_call
+
+---
+# esp/ uses PlatformIO libs; clang can't resolve them → hide remaining noise
+If:
+    PathMatch: esp/
+Diagnostics:
+    Suppress: "*"

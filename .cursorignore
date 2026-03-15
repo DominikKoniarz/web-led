@@ -1,0 +1,4 @@
+# env
+esp/include/secrets.h
+.env*
+!.env.example
