@@ -1,0 +1,11 @@
+# Custom 4MB layout for ESP32-C6
+# - 2MB app partition (single app slot, no OTA slot)
+# - ~500kB LittleFS
+# - Remaining space for generic data storage
+# Name,    Type, SubType, Offset,   Size,     Flags
+nvs,       data, nvs,     0x9000,   0x5000,
+otadata,   data, ota,     0xe000,   0x2000,
+app0,      app,  factory, 0x10000,  0x200000,
+spiffs,    data, spiffs,  0x210000, 0x7D000,
+storage,   data, fat,     0x28D000, 0x162000,
+coredump,  data, coredump,0x3F0000, 0x10000,
