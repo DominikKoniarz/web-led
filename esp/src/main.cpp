@@ -1,4 +1,5 @@
 #include "LittleFS.h"
+#include "state_service.h"
 #include "web_server.h"
 #include "wifi_setup.h"
 #include <Arduino.h>
@@ -19,6 +20,8 @@ void setup() {
         Serial.println("LittleFS mount failed");
         return;
     }
+
+    stateServiceInitDefaults();
 
     setupWiFi();
 

@@ -1,10 +1,14 @@
 #include "web_server.h"
+#include "state_service.h"
+#include "wifi_setup.h"
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
 #include <WiFi.h>
 
 static AsyncWebServer server(80);
+static String lastBroadcastPayload;
 
 static void handleRoot(AsyncWebServerRequest *request) {
     File f = LittleFS.open("/index.html", "r");
@@ -83,17 +87,46 @@ static void handleAssets(AsyncWebServerRequest *request) {
 }
 
 static void handleHealth(AsyncWebServerRequest *request) {
-    String json = "{";
-    json += "\"uptime_s\":" + String(millis() / 1000);
-    json += ",\"wifi_rssi\":" + String(WiFi.RSSI());
-    json += ",\"wifi_ssid\":\"" + WiFi.SSID() + "\"";
-    json += ",\"wifi_ip\":\"" + WiFi.localIP().toString() + "\"";
-    json += ",\"wifi_mac\":\"" + WiFi.macAddress() + "\"";
-    json += ",\"wifi_channel\":" + String(WiFi.channel());
-    json += ",\"free_heap\":" + String(ESP.getFreeHeap());
-    json += "}";
+    request->send(200, "application/json", stateServiceSystemJson());
+}
 
-    request->send(200, "application/json", json);
+static void sendJsonError(AsyncWebServerRequest *request, int code,
+                          const String &message) {
+    JsonDocument doc;
+    doc["error"] = message;
+    String payload;
+    serializeJson(doc, payload);
+    request->send(code, "application/json", payload);
+}
+
+static bool parseJsonBody(uint8_t *data, size_t len, JsonDocument &doc,
+                          String &error) {
+    DeserializationError deserialization = deserializeJson(doc, data, len);
+    if (deserialization) {
+        error = String("Invalid JSON: ") + deserialization.c_str();
+        return false;
+    }
+    return true;
+}
+
+static void handleApiWifiGet(AsyncWebServerRequest *request) {
+    request->send(200, "application/json", stateServiceWiFiJson());
+}
+
+static void handleApiLedGet(AsyncWebServerRequest *request) {
+    request->send(200, "application/json", stateServiceLedJson());
+}
+
+static void handleApiSystemGet(AsyncWebServerRequest *request) {
+    request->send(200, "application/json", stateServiceSystemJson());
+}
+
+static void handleApiStateGet(AsyncWebServerRequest *request) {
+    request->send(200, "application/json", stateServiceFullJson());
+}
+
+static void handleApiContractGet(AsyncWebServerRequest *request) {
+    request->send(200, "application/json", stateServiceApiContractJson());
 }
 
 void setupWebServer() {
@@ -103,14 +136,107 @@ void setupWebServer() {
     server.on("/", HTTP_GET, handleRoot);
     server.on("/health", HTTP_GET, handleHealth);
     server.on("/assets/*", HTTP_GET, handleAssets);
+
+    server.on("/api/contracts", HTTP_GET, handleApiContractGet);
+    server.on("/api/state", HTTP_GET, handleApiStateGet);
+    server.on("/api/wifi", HTTP_GET, handleApiWifiGet);
+    server.on("/api/led", HTTP_GET, handleApiLedGet);
+    server.on("/api/system", HTTP_GET, handleApiSystemGet);
+
+    server.on(
+        "/api/led", HTTP_POST,
+        [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
+           size_t index, size_t total) {
+            (void)index;
+            (void)total;
+
+            JsonDocument doc;
+            String error;
+            if (!parseJsonBody(data, len, doc, error)) {
+                sendJsonError(request, 400, error);
+                return;
+            }
+
+            if (!stateServiceApplyLedPatch(doc.as<JsonVariantConst>(), error)) {
+                sendJsonError(request, 400, error);
+                return;
+            }
+
+            String payload = stateServiceLedJson();
+            notifyClients(payload);
+            request->send(200, "application/json", payload);
+        });
+
+    server.on(
+        "/api/wifi", HTTP_POST,
+        [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
+           size_t index, size_t total) {
+            (void)index;
+            (void)total;
+
+            JsonDocument doc;
+            String error;
+            if (!parseJsonBody(data, len, doc, error)) {
+                sendJsonError(request, 400, error);
+                return;
+            }
+
+            JsonVariantConst payload = doc.as<JsonVariantConst>();
+            if (!stateServiceApplyWiFiPatch(payload, error)) {
+                sendJsonError(request, 400, error);
+                return;
+            }
+
+            JsonObjectConst obj = payload.as<JsonObjectConst>();
+            if (obj["ssid"].is<const char *>()) {
+                String ssid = obj["ssid"].as<String>();
+                String password = obj["password"].is<const char *>()
+                                      ? obj["password"].as<String>()
+                                      : "";
+                setWiFiCredentials(ssid, password);
+            }
+
+            String response = stateServiceWiFiJson();
+            notifyClients(stateServiceFullJson());
+            request->send(200, "application/json", response);
+        });
+
+    server.on(
+        "/api/system", HTTP_POST,
+        [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
+           size_t index, size_t total) {
+            (void)index;
+            (void)total;
+
+            JsonDocument doc;
+            String error;
+            if (!parseJsonBody(data, len, doc, error)) {
+                sendJsonError(request, 400, error);
+                return;
+            }
+
+            if (!stateServiceApplySystemPatch(doc.as<JsonVariantConst>(),
+                                              error)) {
+                sendJsonError(request, 400, error);
+                return;
+            }
+
+            String response = stateServiceSystemJson();
+            notifyClients(stateServiceFullJson());
+            request->send(200, "application/json", response);
+        });
+
     server.begin();
 
     Serial.println("HTTP server started on port 80 (async)");
 }
 
 void notifyClients(const String &payload) {
-    (void)payload;
-    // TODO: Implement when adding WebSockets
+    // Phase 1 stores the latest payload while transport is added in Phase 3.
+    lastBroadcastPayload = payload;
 }
 
 void cleanupClients() {
