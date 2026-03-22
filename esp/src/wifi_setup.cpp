@@ -582,6 +582,3 @@ String wifiScanNetworksJson() {
 
     return serializeWiFiScanResultJson(scanResult);
 }
-
-// TODO: test more and check this:
-// https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/api/wifi.html
