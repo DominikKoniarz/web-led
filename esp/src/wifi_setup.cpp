@@ -11,6 +11,8 @@ static const unsigned long STABLE_DISABLE_AP_MS = 60000;
 static const unsigned long CONNECTION_LOST_COOLDOWN_MS = 2000;
 static const unsigned long PROVISION_REQUEST_DEDUP_MS = 1500;
 static const unsigned long STA_BEGIN_MIN_INTERVAL_MS = 3000;
+static const unsigned long POST_CONNECT_RETRY_HOLDOFF_MS = 3000;
+static const unsigned long IDLE_STUCK_RESET_MS = 15000;
 static const size_t WIFI_MAX_SSID_LEN = 32;
 static const size_t WIFI_MAX_PASS_LEN = 63;
 static const uint8_t RETRY_BACKOFF_S[] = {5, 10, 20, 30};
@@ -45,6 +47,8 @@ static unsigned long gLastRetryWaitLogAt = 0;
 static unsigned long gLastProvisionRequestAt = 0;
 static unsigned long gLastStaBeginAt = 0;
 static unsigned long gLastIdleDeferralLogAt = 0;
+static unsigned long gLastConnectedAt = 0;
+static unsigned long gIdleSince = 0;
 
 static String gLastProvisionSsid;
 static String gLastProvisionPassword;
@@ -113,6 +117,45 @@ static const String &activePassword() {
     return gHasPendingCredentials ? gPendingPassword : gStoredPassword;
 }
 
+static bool validateActiveCredentials(String &error) {
+    String ssid = activeSsid();
+    ssid.trim();
+
+    if (ssid.length() == 0) {
+        error = "active ssid is missing";
+        return false;
+    }
+
+    if (ssid.length() > WIFI_MAX_SSID_LEN) {
+        error = "active ssid is too long";
+        return false;
+    }
+
+    if (activePassword().length() > WIFI_MAX_PASS_LEN) {
+        error = "active password is too long";
+        return false;
+    }
+
+    return true;
+}
+
+static void resetStaDriver(const String &reason) {
+    logWiFiEvent("Resetting STA driver: " + reason);
+    WiFi.disconnect(true, true);
+    delay(20);
+
+    if (gApProvisioningEnabled || gApRescueEnabled) {
+        WiFi.mode(WIFI_AP_STA);
+        WiFi.softAP(PROVISION_AP_SSID, PROVISION_AP_PASSWORD);
+    } else {
+        WiFi.mode(WIFI_STA);
+    }
+
+    gAttemptInProgress = false;
+    gAttemptStartedAt = 0;
+    gIdleSince = 0;
+}
+
 static void setDisconnectedState(WiFiLinkState link) {
     String ip = gApProvisioningEnabled || gApRescueEnabled
                     ? WiFi.softAPIP().toString()
@@ -166,12 +209,48 @@ static void disableApIfEnabled() {
     logWiFiEvent("AP disabled after stable STA");
 }
 
+static void scheduleRetry(unsigned long now);
+
 static void startStaAttempt(bool keepApEnabled) {
     if (!hasRetryCredentials()) {
         return;
     }
 
     unsigned long now = millis();
+    String credentialError;
+    if (!validateActiveCredentials(credentialError)) {
+        logWiFiEvent("Skipping STA attempt: " + credentialError);
+
+        if (gHasPendingCredentials) {
+            gHasPendingCredentials = false;
+            gPendingSsid = "";
+            gPendingPassword = "";
+            logWiFiEvent("Dropped invalid pending credentials");
+        }
+
+        if (!gBootSequenceActive) {
+            scheduleRetry(now);
+            setDisconnectedState(WiFiLinkState::Failed);
+        }
+
+        return;
+    }
+
+    if (gLastConnectedAt != 0 &&
+        now - gLastConnectedAt < POST_CONNECT_RETRY_HOLDOFF_MS) {
+        gNextRetryAt = gLastConnectedAt + static_cast<unsigned long>(
+                                              POST_CONNECT_RETRY_HOLDOFF_MS);
+        if (now - gLastRetryWaitLogAt >= 1000) {
+            long holdoffMs = static_cast<long>(gNextRetryAt - now);
+            if (holdoffMs < 0) {
+                holdoffMs = 0;
+            }
+            logWiFiEvent("Holding off reconnect for " + String(holdoffMs) +
+                         "ms after recent connect");
+            gLastRetryWaitLogAt = now;
+        }
+        return;
+    }
 
     if (gLastStaBeginAt != 0 &&
         now - gLastStaBeginAt < STA_BEGIN_MIN_INTERVAL_MS) {
@@ -179,16 +258,43 @@ static void startStaAttempt(bool keepApEnabled) {
         return;
     }
 
-    if (WiFi.status() == WL_CONNECTED && WiFi.SSID() == activeSsid()) {
-        logWiFiEvent("Skipping STA attempt, already connected to target SSID");
+    if (WiFi.status() == WL_CONNECTED) {
+        if (WiFi.SSID() == activeSsid()) {
+            logWiFiEvent(
+                "Skipping STA attempt, already connected to target SSID");
+
+            gAttemptInProgress = false;
+            gAttemptCount = 0;
+            gBootSequenceActive = false;
+            gNextRetryAt = 0;
+            return;
+        }
+
+        logWiFiEvent("Disconnecting from current SSID before switching to " +
+                     activeSsid());
+
+        WiFi.disconnect();
         gAttemptInProgress = false;
-        gAttemptCount = 0;
-        gBootSequenceActive = false;
-        gNextRetryAt = 0;
+        gAttemptStartedAt = 0;
+        gNextRetryAt = now + CONNECTION_LOST_COOLDOWN_MS;
+        stateServiceUpdateWiFiStatus(toWiFiModeState(WiFi.getMode()),
+                                     WiFiLinkState::Connecting, activeSsid(),
+                                     "0.0.0.0", 0);
         return;
     }
 
     if (WiFi.status() == WL_IDLE_STATUS) {
+        if (gIdleSince == 0) {
+            gIdleSince = now;
+        }
+
+        if (now - gIdleSince >= IDLE_STUCK_RESET_MS) {
+            resetStaDriver("wl=idle for 15s");
+            scheduleRetry(now);
+            setDisconnectedState(WiFiLinkState::Failed);
+            return;
+        }
+
         gNextRetryAt = now + CONNECTION_LOST_COOLDOWN_MS;
         if (now - gLastIdleDeferralLogAt >= 5000) {
             logWiFiEvent(
@@ -198,6 +304,8 @@ static void startStaAttempt(bool keepApEnabled) {
         }
         return;
     }
+
+    gIdleSince = 0;
 
     if (keepApEnabled || gApProvisioningEnabled || gApRescueEnabled) {
         WiFi.mode(WIFI_AP_STA);
@@ -216,6 +324,7 @@ static void startStaAttempt(bool keepApEnabled) {
                  " ssid_bytes=" + String(activeSsid().length()));
 
     gLastStaBeginAt = now;
+    gLastRetryWaitLogAt = 0;
     WiFi.begin(activeSsid().c_str(), activePassword().c_str());
 
     gAttemptInProgress = true;
@@ -253,6 +362,10 @@ static void commitCredentialsOnSuccess() {
         return;
     }
 
+    if (WiFi.status() != WL_CONNECTED || WiFi.SSID() != gPendingSsid) {
+        return;
+    }
+
     gStoredSsid = gPendingSsid;
     gStoredPassword = gPendingPassword;
     gHasPendingCredentials = false;
@@ -273,6 +386,8 @@ static void onConnected(unsigned long now) {
     gBackoffIndex = 0;
     gNextRetryAt = 0;
     gDisconnectedSince = 0;
+    gIdleSince = 0;
+    gLastConnectedAt = now;
 
     if (justConnected) {
         gStableConnectedSince = now;
@@ -352,6 +467,8 @@ void setupWiFi() {
     gLastProvisionRequestAt = 0;
     gLastStaBeginAt = 0;
     gLastIdleDeferralLogAt = 0;
+    gLastConnectedAt = 0;
+    gIdleSince = 0;
     gLastProvisionSsid = "";
     gLastProvisionPassword = "";
 
@@ -379,6 +496,11 @@ void wifiSetupTick() {
     wl_status_t currentStatus = WiFi.status();
 
     if (currentStatus == WL_CONNECTED) {
+        if (gHasPendingCredentials && WiFi.SSID() != activeSsid()) {
+            startStaAttempt(gApProvisioningEnabled || gApRescueEnabled);
+            return;
+        }
+
         onConnected(now);
         return;
     }

@@ -5,9 +5,13 @@
 
 void setupWebServer();
 
-// Phase 1 contract endpoint uses centralized state payloads.
+// Broadcast an app-state payload to all connected WebSocket clients.
 void notifyClients(const String &payload);
+
+// Keep WebSocket client state tidy (disconnect cleanup).
 void cleanupClients();
+
+// Number of active WebSocket clients.
 size_t getConnectedClients();
 
 #endif // WEB_SERVER_H
