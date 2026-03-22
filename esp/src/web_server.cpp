@@ -1,5 +1,4 @@
 #include "web_server.h"
-#include "state_json_codec.h"
 #include "state_service.h"
 #include "wifi_setup.h"
 #include <Arduino.h>
@@ -226,32 +225,21 @@ void setupWebServer() {
             }
 
             JsonVariantConst payload = doc.as<JsonVariantConst>();
-            if (!payload.is<JsonObjectConst>()) {
-                sendJsonError(request, 400, "Payload must be a JSON object");
+            if (!stateServiceApplyWiFiPatch(payload, error)) {
+                sendJsonError(request, 400, error);
                 return;
             }
 
             JsonObjectConst obj = payload.as<JsonObjectConst>();
-            WiFiPatch wifiPatch;
-            if (!parseWiFiPatch(obj, wifiPatch, error)) {
-                sendJsonError(request, 400, error);
-                return;
-            }
-
-            if (wifiPatch.hasCredentials) {
+            if (obj["ssid"].is<const char *>()) {
+                String ssid = obj["ssid"].as<String>();
                 String password = obj["password"].is<const char *>()
                                       ? obj["password"].as<String>()
                                       : "";
-                if (!wifiStartProvisioningConnect(wifiPatch.ssid, password,
-                                                  error)) {
+                if (!wifiStartProvisioningConnect(ssid, password, error)) {
                     sendJsonError(request, 400, error);
                     return;
                 }
-            }
-
-            if (!stateServiceApplyWiFiPatch(payload, error)) {
-                sendJsonError(request, 400, error);
-                return;
             }
 
             String response = stateServiceWiFiJson();

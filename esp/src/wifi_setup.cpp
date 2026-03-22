@@ -11,7 +11,9 @@ static const unsigned long STABLE_DISABLE_AP_MS = 60000;
 static const unsigned long CONNECTION_LOST_COOLDOWN_MS = 2000;
 static const unsigned long PROVISION_REQUEST_DEDUP_MS = 1500;
 static const unsigned long STA_BEGIN_MIN_INTERVAL_MS = 3000;
-static const uint8_t RETRY_BACKOFF_S[] = {2, 5, 10, 20};
+static const size_t WIFI_MAX_SSID_LEN = 32;
+static const size_t WIFI_MAX_PASS_LEN = 63;
+static const uint8_t RETRY_BACKOFF_S[] = {5, 10, 20, 30};
 
 static const char *PROVISION_AP_SSID = "webled-setup";
 static const char *PROVISION_AP_PASSWORD =
@@ -210,7 +212,8 @@ static void startStaAttempt(bool keepApEnabled) {
             : WIFI_MODE_STA);
 
     logWiFiEvent("Starting STA attempt #" + String(attemptNo) +
-                 " mode=" + modeBeforeBegin + " ssid=" + activeSsid());
+                 " mode=" + modeBeforeBegin + " ssid=" + activeSsid() +
+                 " ssid_bytes=" + String(activeSsid().length()));
 
     gLastStaBeginAt = now;
     WiFi.begin(activeSsid().c_str(), activePassword().c_str());
@@ -459,6 +462,21 @@ bool wifiStartProvisioningConnect(const String &ssid, const String &password,
         return false;
     }
 
+    if (trimmedSsid.length() > WIFI_MAX_SSID_LEN) {
+        error = "ssid must be <= 32 bytes";
+        logWiFiEvent("Rejecting provisioning request: ssid too long (bytes=" +
+                     String(trimmedSsid.length()) + ")");
+        return false;
+    }
+
+    if (password.length() > WIFI_MAX_PASS_LEN) {
+        error = "password must be <= 63 bytes";
+        logWiFiEvent(
+            "Rejecting provisioning request: password too long (bytes=" +
+            String(password.length()) + ")");
+        return false;
+    }
+
     if (now - gLastProvisionRequestAt <= PROVISION_REQUEST_DEDUP_MS &&
         trimmedSsid == gLastProvisionSsid &&
         password == gLastProvisionPassword) {
@@ -481,6 +499,7 @@ bool wifiStartProvisioningConnect(const String &ssid, const String &password,
     }
 
     logWiFiEvent("Provisioning connect requested ssid=" + trimmedSsid +
+                 " ssid_bytes=" + String(trimmedSsid.length()) +
                  " password_len=" + String(password.length()));
 
     gLastProvisionRequestAt = now;
