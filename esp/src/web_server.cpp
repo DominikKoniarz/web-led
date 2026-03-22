@@ -1,4 +1,5 @@
 #include "web_server.h"
+#include "state_json_codec.h"
 #include "state_service.h"
 #include "wifi_setup.h"
 #include <Arduino.h>
@@ -113,6 +114,10 @@ static void handleApiWifiGet(AsyncWebServerRequest *request) {
     request->send(200, "application/json", stateServiceWiFiJson());
 }
 
+static void handleApiWifiScanGet(AsyncWebServerRequest *request) {
+    request->send(200, "application/json", wifiScanNetworksJson());
+}
+
 static void handleApiLedGet(AsyncWebServerRequest *request) {
     request->send(200, "application/json", stateServiceLedJson());
 }
@@ -139,6 +144,7 @@ void setupWebServer() {
 
     server.on("/api/contracts", HTTP_GET, handleApiContractGet);
     server.on("/api/state", HTTP_GET, handleApiStateGet);
+    server.on("/api/wifi/scan", HTTP_GET, handleApiWifiScanGet);
     server.on("/api/wifi", HTTP_GET, handleApiWifiGet);
     server.on("/api/led", HTTP_GET, handleApiLedGet);
     server.on("/api/system", HTTP_GET, handleApiSystemGet);
@@ -169,6 +175,42 @@ void setupWebServer() {
         });
 
     server.on(
+        "/api/wifi/connect", HTTP_POST,
+        [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
+           size_t index, size_t total) {
+            (void)index;
+            (void)total;
+
+            JsonDocument doc;
+            String error;
+            if (!parseJsonBody(data, len, doc, error)) {
+                sendJsonError(request, 400, error);
+                return;
+            }
+
+            JsonObjectConst payload = doc.as<JsonObjectConst>();
+            if (!payload["ssid"].is<const char *>()) {
+                sendJsonError(request, 400, "ssid is required");
+                return;
+            }
+
+            String ssid = payload["ssid"].as<String>();
+            String password = payload["password"].is<const char *>()
+                                  ? payload["password"].as<String>()
+                                  : "";
+
+            if (!wifiStartProvisioningConnect(ssid, password, error)) {
+                sendJsonError(request, 400, error);
+                return;
+            }
+
+            String response = stateServiceWiFiJson();
+            notifyClients(stateServiceFullJson());
+            request->send(200, "application/json", response);
+        });
+
+    server.on(
         "/api/wifi", HTTP_POST,
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
         [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
@@ -184,18 +226,32 @@ void setupWebServer() {
             }
 
             JsonVariantConst payload = doc.as<JsonVariantConst>();
-            if (!stateServiceApplyWiFiPatch(payload, error)) {
-                sendJsonError(request, 400, error);
+            if (!payload.is<JsonObjectConst>()) {
+                sendJsonError(request, 400, "Payload must be a JSON object");
                 return;
             }
 
             JsonObjectConst obj = payload.as<JsonObjectConst>();
-            if (obj["ssid"].is<const char *>()) {
-                String ssid = obj["ssid"].as<String>();
+            WiFiPatch wifiPatch;
+            if (!parseWiFiPatch(obj, wifiPatch, error)) {
+                sendJsonError(request, 400, error);
+                return;
+            }
+
+            if (wifiPatch.hasCredentials) {
                 String password = obj["password"].is<const char *>()
                                       ? obj["password"].as<String>()
                                       : "";
-                setWiFiCredentials(ssid, password);
+                if (!wifiStartProvisioningConnect(wifiPatch.ssid, password,
+                                                  error)) {
+                    sendJsonError(request, 400, error);
+                    return;
+                }
+            }
+
+            if (!stateServiceApplyWiFiPatch(payload, error)) {
+                sendJsonError(request, 400, error);
+                return;
             }
 
             String response = stateServiceWiFiJson();

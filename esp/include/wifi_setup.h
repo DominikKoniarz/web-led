@@ -4,9 +4,10 @@
 #include <Arduino.h>
 
 void setupWiFi();
-void reconnectWiFi();
+void wifiSetupTick();
 
-// Phase 1 provisioning contract hook. Apply in-memory credentials only.
-void setWiFiCredentials(const String &ssid, const String &password);
+bool wifiStartProvisioningConnect(const String &ssid, const String &password,
+                                  String &error);
+String wifiScanNetworksJson();
 
 #endif // WIFI_SETUP_H

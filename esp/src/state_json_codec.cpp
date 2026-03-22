@@ -68,6 +68,19 @@ static bool parseLedMode(const String &mode, LedMode &out) {
     return false;
 }
 
+static const char *toString(WiFiScanStatus status) {
+    switch (status) {
+    case WiFiScanStatus::Started:
+        return "started";
+    case WiFiScanStatus::Running:
+        return "running";
+    case WiFiScanStatus::Complete:
+        return "complete";
+    }
+
+    return "started";
+}
+
 void serializeLedState(JsonObject obj, const LedState &led) {
     obj["enabled"] = led.enabled;
     obj["mode"] = toString(led.mode);
@@ -250,4 +263,25 @@ bool parseSystemPatch(JsonObjectConst obj, SystemPatch &out, String &error) {
     }
 
     return true;
+}
+
+String serializeWiFiScanResultJson(const WiFiScanResult &scanResult) {
+    JsonDocument doc;
+    doc["status"] = toString(scanResult.status);
+    doc["count"] = scanResult.count;
+
+    JsonArray networks = doc["networks"].to<JsonArray>();
+    if (scanResult.status == WiFiScanStatus::Complete) {
+        for (uint8_t i = 0; i < scanResult.count; i++) {
+            JsonObject network = networks.add<JsonObject>();
+            network["ssid"] = scanResult.networks[i].ssid;
+            network["rssi"] = scanResult.networks[i].rssi;
+            network["channel"] = scanResult.networks[i].channel;
+            network["auth"] = scanResult.networks[i].auth;
+        }
+    }
+
+    String payload;
+    serializeJson(doc, payload);
+    return payload;
 }

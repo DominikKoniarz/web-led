@@ -176,6 +176,8 @@ String stateServiceApiContractJson() {
 
     JsonObject rest = root["rest"].to<JsonObject>();
     rest["wifi"] = "/api/wifi";
+    rest["wifi_scan"] = "/api/wifi/scan";
+    rest["wifi_connect"] = "/api/wifi/connect";
     rest["led"] = "/api/led";
     rest["system"] = "/api/system";
 

@@ -6,9 +6,6 @@
 
 #define LED_PIN 15
 
-static const unsigned long WIFI_CHECK_INTERVAL = 30000; // 30 seconds
-static unsigned long lastWiFiCheck = 0;
-
 void setup() {
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, LOW);
@@ -38,10 +35,5 @@ void setup() {
 
 void loop() {
     delay(10);
-
-    unsigned long now = millis();
-    if (now - lastWiFiCheck >= WIFI_CHECK_INTERVAL) {
-        lastWiFiCheck = now;
-        reconnectWiFi();
-    }
+    wifiSetupTick();
 }
