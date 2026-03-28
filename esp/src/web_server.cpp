@@ -518,6 +518,31 @@ static void handleApiLedsSpeedPost(AsyncWebServerRequest *request,
     request->send(200, "application/json", getLedJson());
 }
 
+static void handleApiWifiConnectPost(AsyncWebServerRequest *request,
+                                     uint8_t *data, size_t len, size_t index,
+                                     size_t total) {
+    (void)total;
+    (void)index;
+
+    JsonDocument doc;
+    String error;
+
+    if (!parseJsonBody(data, len, doc, error)) {
+        sendJsonError(request, 400, error);
+        return;
+    }
+
+    WiFiConnectPatch patch;
+    if (!parseWiFiConnectPatch(doc.as<JsonObjectConst>(), patch, error)) {
+        sendJsonError(request, 400, error);
+        return;
+    }
+
+    request->send(204, "application/json");
+
+    WiFi.begin(patch.ssid.c_str(), patch.password.c_str());
+}
+
 void setupWebServer() {
     DefaultHeaders::Instance().addHeader("Connection", "keep-alive");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
@@ -546,145 +571,16 @@ void setupWebServer() {
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
         handleApiLedsSpeedPost);
 
-    // server.on("/api/contracts", HTTP_GET, handleApiContractGet);
-    // server.on("/api/state", HTTP_GET, handleApiStateGet);
-    // server.on("/api/wifi/scan", HTTP_GET, handleApiWifiScanGet);
-    // server.on("/api/wifi", HTTP_GET, handleApiWifiGet);
-    // server.on("/api/led", HTTP_GET, handleApiLedGet);
-    // server.on("/api/system", HTTP_GET, handleApiSystemGet);
-
-    // server.on(
-    //     "/api/led", HTTP_POST,
-    //     [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
-    //     [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
-    //        size_t index, size_t total) {
-    //         (void)index;
-    //         (void)total;
-
-    //         JsonDocument doc;
-    //         String error;
-    //         if (!parseJsonBody(data, len, doc, error)) {
-    //             sendJsonError(request, 400, error);
-    //             return;
-    //         }
-
-    //         if (!stateServiceApplyLedPatch(doc.as<JsonVariantConst>(),
-    //         error)) {
-    //             sendJsonError(request, 400, error);
-    //             return;
-    //         }
-
-    //         String payload = stateServiceLedJson();
-    //         broadcastStateSync();
-    //         request->send(200, "application/json", payload);
-    //     });
-
-    // server.on(
-    //     "/api/wifi/connect", HTTP_POST,
-    //     [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
-    //     [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
-    //        size_t index, size_t total) {
-    //         (void)index;
-    //         (void)total;
-
-    //         JsonDocument doc;
-    //         String error;
-    //         if (!parseJsonBody(data, len, doc, error)) {
-    //             sendJsonError(request, 400, error);
-    //             return;
-    //         }
-
-    //         JsonObjectConst payload = doc.as<JsonObjectConst>();
-    //         if (!payload["ssid"].is<const char *>()) {
-    //             sendJsonError(request, 400, "ssid is required");
-    //             return;
-    //         }
-
-    //         String ssid = payload["ssid"].as<String>();
-    //         String password = payload["password"].is<const char *>()
-    //                               ? payload["password"].as<String>()
-    //                               : "";
-
-    //         if (!wifiStartProvisioningConnect(ssid, password, error)) {
-    //             sendJsonError(request, 400, error);
-    //             return;
-    //         }
-
-    //         String response = stateServiceWiFiJson();
-    //         broadcastStateSync();
-    //         request->send(200, "application/json", response);
-    //     });
-
-    // server.on(
-    //     "/api/wifi", HTTP_POST,
-    //     [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
-    //     [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
-    //        size_t index, size_t total) {
-    //         (void)index;
-    //         (void)total;
-
-    //         JsonDocument doc;
-    //         String error;
-    //         if (!parseJsonBody(data, len, doc, error)) {
-    //             sendJsonError(request, 400, error);
-    //             return;
-    //         }
-
-    //         JsonVariantConst payload = doc.as<JsonVariantConst>();
-    //         if (!stateServiceApplyWiFiPatch(payload, error)) {
-    //             sendJsonError(request, 400, error);
-    //             return;
-    //         }
-
-    //         JsonObjectConst obj = payload.as<JsonObjectConst>();
-    //         if (obj["ssid"].is<const char *>()) {
-    //             String ssid = obj["ssid"].as<String>();
-    //             String password = obj["password"].is<const char *>()
-    //                                   ? obj["password"].as<String>()
-    //                                   : "";
-    //             if (!wifiStartProvisioningConnect(ssid, password, error)) {
-    //                 sendJsonError(request, 400, error);
-    //                 return;
-    //             }
-    //         }
-
-    //         String response = stateServiceWiFiJson();
-    //         broadcastStateSync();
-    //         request->send(200, "application/json", response);
-    //     });
-
-    // server.on(
-    //     "/api/system", HTTP_POST,
-    //     [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
-    //     [](AsyncWebServerRequest *request, uint8_t *data, size_t len,
-    //        size_t index, size_t total) {
-    //         (void)index;
-    //         (void)total;
-
-    //         JsonDocument doc;
-    //         String error;
-    //         if (!parseJsonBody(data, len, doc, error)) {
-    //             sendJsonError(request, 400, error);
-    //             return;
-    //         }
-
-    //         if (!stateServiceApplySystemPatch(doc.as<JsonVariantConst>(),
-    //                                           error)) {
-    //             sendJsonError(request, 400, error);
-    //             return;
-    //         }
-
-    //         String response = stateServiceSystemJson();
-    //         broadcastStateSync();
-    //         request->send(200, "application/json", response);
-    //     });
+    server.on(
+        "/api/wifi/connect", HTTP_POST,
+        [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
+        handleApiWifiConnectPost);
 
     ws.onEvent(onWebSocketEvent);
     server.addHandler(&ws);
 
     server.begin();
 
-    // lastBroadcastPayload = buildStateSyncEnvelope();
     Serial.println("HTTP/WebSocket server started on port 80 (async)");
 }
 

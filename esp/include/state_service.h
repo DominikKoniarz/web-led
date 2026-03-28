@@ -62,6 +62,9 @@ void updateLedBrightness(uint8_t brightness);
 void updateLedSpeed(uint16_t speed);
 void updateLedSolidColor(uint32_t solidColorHex);
 
+String getWiFiJson();
+void updateWiFiState(const String &ssid, const String &ip, int32_t rssi);
+
 // void stateServiceUpdateWiFiStatus(const String &ssid, const String &ip,
 //                                   int32_t rssi);
 

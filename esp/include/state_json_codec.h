@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
+// LED patches
 struct LedModePatch {
     LedMode mode;
 };
@@ -19,6 +20,12 @@ struct LedBrightnessPatch {
 
 struct LedSpeedPatch {
     uint16_t speed;
+};
+
+// WiFi patches
+struct WiFiConnectPatch {
+    String ssid;
+    String password;
 };
 
 enum class WiFiScanStatus { Started, Running, Complete };
@@ -40,13 +47,13 @@ struct WiFiScanResult {
 
 void serializeLedState(JsonObject obj, const LedState &led);
 void serializeWiFiState(JsonObject obj, const WiFiState &wifi);
-void serializeNetworkState(JsonObject obj, const NetworkState &network);
+// void serializeNetworkState(JsonObject obj, const NetworkState &network);
 // void serializeDeviceState(JsonObject obj, const DeviceState &device);
 
 // bool parseLedPatch(JsonObjectConst obj, LedPatch &out, String &error);
 // bool parseWiFiPatch(JsonObjectConst obj, WiFiPatch &out, String &error);
 // bool parseSystemPatch(JsonObjectConst obj, SystemPatch &out, String &error);
-
+//
 bool parseLedModePatch(const JsonObjectConst obj, LedModePatch &out,
                        String &error);
 bool parseLedSolidColorPatch(const JsonObjectConst obj, LedSolidColorPatch &out,
@@ -56,6 +63,9 @@ bool parseLedBrightnessPatch(const JsonObjectConst obj, LedBrightnessPatch &out,
 bool parseLedSpeedPatch(const JsonObjectConst obj, LedSpeedPatch &out,
                         String &error);
 
-String serializeWiFiScanResultJson(const WiFiScanResult &scanResult);
+bool parseWiFiConnectPatch(const JsonObjectConst obj, WiFiConnectPatch &out,
+                           String &error);
+
+// String serializeWiFiScanResultJson(const WiFiScanResult &scanResult);
 
 #endif // STATE_JSON_CODEC_H

@@ -96,6 +96,12 @@ void serializeLedState(JsonObject obj, const LedState &led) {
     obj["solidColor"] = led.solidColor;
 }
 
+void serializeWiFiState(JsonObject obj, const WiFiState &wifi) {
+    obj["ssid"] = wifi.ssid;
+    obj["ip"] = wifi.ip;
+    obj["rssi"] = wifi.rssi;
+}
+
 // void serializeWiFiState(JsonObject obj, const WiFiState &wifi) {
 //     obj["mode"] = toString(wifi.mode);
 //     obj["link"] = toString(wifi.link);
@@ -251,6 +257,40 @@ bool parseLedSpeedPatch(const JsonObjectConst obj, LedSpeedPatch &out,
         out.speed = obj["speedPercent"].as<uint16_t>();
     } else {
         error = "speedPercent is required";
+        return false;
+    }
+
+    return true;
+}
+
+/*
+    Example WiFi connect patch JSON:
+    {
+        "ssid": "MyWiFi",
+        "password": "MyPassword"
+    }
+*/
+bool parseWiFiConnectPatch(const JsonObjectConst obj, WiFiConnectPatch &out,
+                           String &error) {
+    if (!obj["ssid"].isNull()) {
+        if (!obj["ssid"].is<const char *>()) {
+            error = "ssid must be string";
+            return false;
+        }
+        out.ssid = obj["ssid"].as<String>();
+    } else {
+        error = "ssid is required";
+        return false;
+    }
+
+    if (!obj["password"].isNull()) {
+        if (!obj["password"].is<const char *>()) {
+            error = "password must be string";
+            return false;
+        }
+        out.password = obj["password"].as<String>();
+    } else {
+        error = "password is required";
         return false;
     }
 
