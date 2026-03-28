@@ -22,6 +22,10 @@ struct LedSpeedPatch {
     uint16_t speed;
 };
 
+struct SettingsPatch {
+    uint16_t ledCount;
+};
+
 // WiFi patches
 struct WiFiConnectPatch {
     String ssid;
@@ -47,6 +51,7 @@ struct WiFiScanResult {
 
 void serializeLedState(JsonObject obj, const LedState &led);
 void serializeWiFiState(JsonObject obj, const WiFiState &wifi);
+void serializeSystemState(JsonObject obj, const SystemState &system);
 // void serializeNetworkState(JsonObject obj, const NetworkState &network);
 // void serializeDeviceState(JsonObject obj, const DeviceState &device);
 
@@ -61,6 +66,8 @@ bool parseLedSolidColorPatch(const JsonObjectConst obj, LedSolidColorPatch &out,
 bool parseLedBrightnessPatch(const JsonObjectConst obj, LedBrightnessPatch &out,
                              String &error);
 bool parseLedSpeedPatch(const JsonObjectConst obj, LedSpeedPatch &out,
+                        String &error);
+bool parseSettingsPatch(const JsonObjectConst obj, SettingsPatch &out,
                         String &error);
 
 bool parseWiFiConnectPatch(const JsonObjectConst obj, WiFiConnectPatch &out,

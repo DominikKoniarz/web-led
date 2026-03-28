@@ -418,6 +418,10 @@ static void handleApiLedsGet(AsyncWebServerRequest *request) {
     request->send(200, "application/json", getLedJson());
 }
 
+static void handleApiSettingsGet(AsyncWebServerRequest *request) {
+    request->send(200, "application/json", getSystemJson());
+}
+
 static void handleApiLedsModePost(AsyncWebServerRequest *request, uint8_t *data,
                                   size_t len, size_t index, size_t total) {
     (void)total;
@@ -543,6 +547,30 @@ static void handleApiWifiConnectPost(AsyncWebServerRequest *request,
     WiFi.begin(patch.ssid.c_str(), patch.password.c_str());
 }
 
+static void handleApiSettingsPost(AsyncWebServerRequest *request, uint8_t *data,
+                                  size_t len, size_t index, size_t total) {
+    (void)total;
+    (void)index;
+
+    JsonDocument doc;
+    String error;
+
+    if (!parseJsonBody(data, len, doc, error)) {
+        sendJsonError(request, 400, error);
+        return;
+    }
+
+    SettingsPatch patch;
+    if (!parseSettingsPatch(doc.as<JsonObjectConst>(), patch, error)) {
+        sendJsonError(request, 400, error);
+        return;
+    }
+
+    updateSystemLedCount(patch.ledCount);
+
+    request->send(200, "application/json", getSystemJson());
+}
+
 void setupWebServer() {
     DefaultHeaders::Instance().addHeader("Connection", "keep-alive");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
@@ -554,6 +582,7 @@ void setupWebServer() {
     // https://claude.ai/chat/5b2a2135-00cd-47c0-899e-39ffb555cb19
 
     server.on("/api/leds", HTTP_GET, handleApiLedsGet);
+    server.on("/api/settings", HTTP_GET, handleApiSettingsGet);
     server.on(
         "/api/leds/mode", HTTP_POST,
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
@@ -575,6 +604,10 @@ void setupWebServer() {
         "/api/wifi/connect", HTTP_POST,
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
         handleApiWifiConnectPost);
+    server.on(
+        "/api/settings", HTTP_POST,
+        [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
+        handleApiSettingsPost);
 
     ws.onEvent(onWebSocketEvent);
     server.addHandler(&ws);

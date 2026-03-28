@@ -1,4 +1,5 @@
 #include "state_service.h"
+#include "led_runtime.h"
 #include "state_json_codec.h"
 #include <Arduino.h>
 
@@ -10,10 +11,16 @@ static String serializeDoc(JsonDocument &doc) {
     return out;
 }
 
+static uint16_t clampGlobalLedCount(uint16_t ledCount) {
+    return ledCount > GLOBAL_LED_LIMIT ? GLOBAL_LED_LIMIT : ledCount;
+}
+
 void stateServiceInitDefaults() {
-    gState.led.mode = LedMode::Solid;
-    gState.led.brightnessPercent = 50;
+    // gState.led.mode = LedMode::Solid;
+    gState.led.mode = LedMode::Rainbow;
+    gState.led.brightnessPercent = 40;
     gState.led.speedPercent = 100;
+    gState.led.animationSpeed = 100;
     gState.led.solidColor = 0x00FFFFFF;
 
     gState.wifi.ssid = "";
@@ -24,7 +31,7 @@ void stateServiceInitDefaults() {
     gState.network.ip = "0.0.0.0";
     gState.network.subnet = "255.255.255.0";
 
-    gState.system.ledCount = 30;
+    gState.system.ledCount = 60;
 }
 
 const AppState &stateServiceGet() { return gState; }
@@ -39,11 +46,24 @@ String getLedJson() {
 
 void updateLedMode(LedMode mode) { gState.led.mode = mode; }
 void updateLedBrightness(uint8_t brightness) {
-    gState.led.brightnessPercent = brightness;
+    gState.led.brightnessPercent = brightness > 100 ? 100 : brightness;
 }
-void updateLedSpeed(uint16_t speed) { gState.led.speedPercent = speed; }
+void updateLedSpeed(uint16_t speed) {
+    gState.led.speedPercent = speed > 100 ? 100 : speed;
+}
 void updateLedSolidColor(uint32_t solidColor) {
     gState.led.solidColor = solidColor;
+}
+
+String getSystemJson() {
+    JsonDocument doc;
+    JsonObject system = doc.to<JsonObject>();
+    serializeSystemState(system, gState.system);
+    return serializeDoc(doc);
+}
+
+void updateSystemLedCount(uint16_t ledCount) {
+    gState.system.ledCount = clampGlobalLedCount(ledCount);
 }
 
 // WiFi

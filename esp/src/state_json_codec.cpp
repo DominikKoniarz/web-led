@@ -1,4 +1,5 @@
 #include "state_json_codec.h"
+#include "led_runtime.h"
 
 // static const char *toString(WiFiModeState mode) {
 //     switch (mode) {
@@ -100,6 +101,10 @@ void serializeWiFiState(JsonObject obj, const WiFiState &wifi) {
     obj["ssid"] = wifi.ssid;
     obj["ip"] = wifi.ip;
     obj["rssi"] = wifi.rssi;
+}
+
+void serializeSystemState(JsonObject obj, const SystemState &system) {
+    obj["ledCount"] = system.ledCount;
 }
 
 // void serializeWiFiState(JsonObject obj, const WiFiState &wifi) {
@@ -257,6 +262,27 @@ bool parseLedSpeedPatch(const JsonObjectConst obj, LedSpeedPatch &out,
         out.speed = obj["speedPercent"].as<uint16_t>();
     } else {
         error = "speedPercent is required";
+        return false;
+    }
+
+    return true;
+}
+
+bool parseSettingsPatch(const JsonObjectConst obj, SettingsPatch &out,
+                        String &error) {
+    if (!obj["ledCount"].isNull()) {
+        if (!obj["ledCount"].is<uint16_t>()) {
+            error = "ledCount must be a number";
+            return false;
+        }
+        const uint16_t ledCount = obj["ledCount"].as<uint16_t>();
+        if (ledCount > GLOBAL_LED_LIMIT) {
+            error = String("ledCount must be 0..") + GLOBAL_LED_LIMIT;
+            return false;
+        }
+        out.ledCount = ledCount;
+    } else {
+        error = "ledCount is required";
         return false;
     }
 
