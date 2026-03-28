@@ -11,18 +11,19 @@ void setup() {
     digitalWrite(LED_PIN, LOW);
 
     Serial.begin(115200);
-    delay(1000);
+    delay(1500);
 
-    if (!LittleFS.begin(true)) {
+    if (!LittleFS.begin(true, "/littlefs", 10, "littlefs")) {
         Serial.println("LittleFS mount failed");
         return;
     }
 
-    // stateServiceInitDefaults();
+    // This is probably temporary
+    stateServiceInitDefaults();
 
     setupWiFi();
 
-    // setupWebServer();
+    setupWebServer();
 
     // 3 blinks to indicate successful setup
     for (int i = 0; i < 3; i++) {
@@ -33,12 +34,20 @@ void setup() {
     }
 }
 
+constexpr unsigned long TEMP_LOG_INTERVAL_MS = 3000;
+
 void loop() {
-    delay(25);
+    static unsigned long lastTempLogMs = 0;
+
+    delay(500);
 
     // wifiSetupTick();
 
-    // cleanupClients();
+    cleanupClients();
 
-    // TESTING
+    const unsigned long now = millis();
+    if (now - lastTempLogMs >= TEMP_LOG_INTERVAL_MS) {
+        lastTempLogMs = now;
+        Serial.printf("CPU temp: %.2f C\n", temperatureRead());
+    }
 }

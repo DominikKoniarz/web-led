@@ -4,70 +4,78 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-enum class WiFiModeState { Boot, Sta, Ap, ApSta };
-
-enum class WiFiLinkState { Idle, Connecting, Connected, Disconnected, Failed };
-
-enum class LedMode { Off, Solid, Rainbow, Breathing };
+enum class LedMode {
+    Solid,
+    Rainbow,
+    Breathing,
+    Chase,
+    Sparkle,
+    Fire,
+    Wave,
+    Off,
+};
 
 struct LedState {
-    bool enabled;
     LedMode mode;
-    uint8_t brightness;
-    uint16_t speed;
-    uint16_t ledCount;
+    uint8_t brightnessPercent;
+    uint16_t speedPercent;
     uint32_t solidColor;
+    uint16_t animationSpeed;
 };
 
 struct WiFiState {
-    WiFiModeState mode;
-    WiFiLinkState link;
     String ssid;
     String ip;
     int32_t rssi;
-    bool hasCredentials;
 };
 
 struct NetworkState {
     bool dhcpEnabled;
     String ip;
     String subnet;
-    String gateway;
-    String dns1;
-    String dns2;
 };
 
-struct DeviceState {
-    String name;
-    String firmwareVersion;
-    String hardware;
+struct SystemState {
+    uint16_t ledCount;
 };
+
+// struct DeviceState {
+//     String name;
+//     String firmwareVersion;
+//     String hardware;
+// };
 
 struct AppState {
     LedState led;
     WiFiState wifi;
     NetworkState network;
-    DeviceState device;
+    SystemState system;
+    // DeviceState device;
 };
 
 void stateServiceInitDefaults();
 const AppState &stateServiceGet();
 
-void stateServiceUpdateWiFiStatus(WiFiModeState mode, WiFiLinkState link,
-                                  const String &ssid, const String &ip,
-                                  int32_t rssi);
+String getLedJson();
+void updateLedMode(LedMode mode);
+void updateLedBrightness(uint8_t brightness);
+void updateLedSpeed(uint16_t speed);
+void updateLedSolidColor(uint32_t solidColorHex);
 
-void stateServiceSetWiFiCredentials(const String &ssid, bool hasCredentials);
+// void stateServiceUpdateWiFiStatus(const String &ssid, const String &ip,
+//                                   int32_t rssi);
 
-bool stateServiceApplyLedPatch(JsonVariantConst patch, String &error);
-bool stateServiceApplyWiFiPatch(JsonVariantConst patch, String &error);
-bool stateServiceApplySystemPatch(JsonVariantConst patch, String &error);
+// void stateServiceSetWiFiCredentials(const String &ssid, bool hasCredentials);
 
-String stateServiceLedJson();
-String stateServiceWiFiJson();
-String stateServiceSystemJson();
-String stateServiceFullJson();
+// bool stateServiceApplyLedPatch(JsonVariantConst patch, String &error);
+// bool stateServiceApplyWiFiPatch(JsonVariantConst patch, String &error);
+// bool stateServiceApplySystemPatch(JsonVariantConst patch, String &error);
 
-String stateServiceApiContractJson();
+// String stateServiceLedJson();
+// String stateServiceWiFiJson();
+// String stateServiceSystemJson();
+// String stateServiceFullJson();
+
+// String stateServiceApiContractJson();
 
 #endif // STATE_SERVICE_H

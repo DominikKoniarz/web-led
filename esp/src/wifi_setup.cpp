@@ -717,10 +717,10 @@
 #include "secrets.h"
 #include <Arduino.h>
 
-// static const String ssid = WIFI_SSID;
-// static const String password = WIFI_PASSWORD;
-static const String ssid = WIFI_SSID_2;
-static const String password = WIFI_PASSWORD_2;
+static const String ssid = WIFI_SSID;
+static const String password = WIFI_PASSWORD;
+// static const String ssid = WIFI_SSID_2;
+// static const String password = WIFI_PASSWORD_2;
 
 static const String AP_SSID = "webled-setup";
 static const String AP_PASSWORD = "webled-setup";
