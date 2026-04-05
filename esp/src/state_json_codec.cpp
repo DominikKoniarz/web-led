@@ -1,5 +1,6 @@
 #include "state_json_codec.h"
 #include "led_runtime.h"
+#include "state_service.h"
 
 // static const char *toString(WiFiModeState mode) {
 //     switch (mode) {
@@ -94,7 +95,9 @@ void serializeLedState(JsonObject obj, const LedState &led) {
     obj["mode"] = toString(led.mode);
     obj["brightnessPercent"] = led.brightnessPercent;
     obj["speedPercent"] = led.speedPercent;
-    obj["solidColor"] = led.solidColor;
+    obj["red"] = led.solidColor.red;
+    obj["green"] = led.solidColor.green;
+    obj["blue"] = led.solidColor.blue;
 }
 
 void serializeWiFiState(JsonObject obj, const WiFiState &wifi) {
@@ -105,6 +108,33 @@ void serializeWiFiState(JsonObject obj, const WiFiState &wifi) {
 
 void serializeSystemState(JsonObject obj, const SystemState &system) {
     obj["ledCount"] = system.ledCount;
+}
+
+// for now, maybe change later
+void serializeWiFiStatus(JsonObject obj, const WifiStatusResponse &status) {
+    if (status.sta.has_value()) {
+        JsonObject sta = obj["sta"].to<JsonObject>();
+        sta["ssid"] = status.sta->ssid;
+        sta["ip"] = status.sta->ip;
+        sta["rssi"] = status.sta->rssi;
+    } else {
+        obj["sta"] = nullptr;
+    }
+
+    if (status.ap.has_value()) {
+        JsonObject ap = obj["ap"].to<JsonObject>();
+        ap["ssid"] = status.ap->ssid;
+        ap["ip"] = status.ap->ip;
+    } else {
+        obj["ap"] = nullptr;
+    }
+}
+
+String getWiFiStatusJson(const WifiStatusResponse &status) {
+    JsonDocument doc;
+    JsonObject obj = doc.to<JsonObject>();
+    serializeWiFiStatus(obj, status);
+    return serializeDoc(doc);
 }
 
 // void serializeWiFiState(JsonObject obj, const WiFiState &wifi) {
@@ -187,7 +217,8 @@ bool parseLedModePatch(const JsonObjectConst obj, LedModePatch &out,
 
         LedMode parsedMode;
         if (!parseLedMode(obj["mode"].as<String>(), parsedMode)) {
-            error = "Unsupported mode";
+            error = "Unsupported mode. Supported modes are: off, solid, "
+                    "rainbow, breathing, chase, sparkle, fire, wave";
             return false;
         }
 
@@ -203,21 +234,27 @@ bool parseLedModePatch(const JsonObjectConst obj, LedModePatch &out,
 /*
     Example led patch JSON:
     {
-        "solidColor": 16711680
+        "red": 255,
+        "green": 128,
+        "blue": 64
     }
 */
 bool parseLedSolidColorPatch(const JsonObjectConst obj, LedSolidColorPatch &out,
                              String &error) {
-    if (!obj["solidColor"].isNull()) {
-        if (!obj["solidColor"].is<uint32_t>()) {
-            error = "solidColor must be an integer";
-            return false;
-        }
-        out.solidColor = obj["solidColor"].as<uint32_t>();
-    } else {
-        error = "solidColor is required";
+    if (obj["red"].isNull() || obj["green"].isNull() || obj["blue"].isNull()) {
+        error = "red, green and blue are required";
         return false;
     }
+
+    if (!obj["red"].is<uint8_t>() || !obj["green"].is<uint8_t>() ||
+        !obj["blue"].is<uint8_t>()) {
+        error = "red, green and blue must be integers in range 0..255";
+        return false;
+    }
+
+    out.red = obj["red"].as<uint8_t>();
+    out.green = obj["green"].as<uint8_t>();
+    out.blue = obj["blue"].as<uint8_t>();
 
     return true;
 }

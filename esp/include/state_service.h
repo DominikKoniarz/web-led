@@ -15,11 +15,17 @@ enum class LedMode {
     Off,
 };
 
+struct RgbColor {
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+};
+
 struct LedState {
     LedMode mode;
     uint8_t brightnessPercent;
     uint16_t speedPercent;
-    uint32_t solidColor;
+    RgbColor solidColor;
     uint16_t animationSpeed;
 };
 
@@ -56,11 +62,13 @@ struct AppState {
 void stateServiceInitDefaults();
 const AppState &stateServiceGet();
 
+String serializeDoc(JsonDocument &doc);
+
 String getLedJson();
 void updateLedMode(LedMode mode);
 void updateLedBrightness(uint8_t brightness);
 void updateLedSpeed(uint16_t speed);
-void updateLedSolidColor(uint32_t solidColorHex);
+void updateLedSolidColor(uint8_t red, uint8_t green, uint8_t blue);
 
 String getSystemJson();
 void updateSystemLedCount(uint16_t ledCount);

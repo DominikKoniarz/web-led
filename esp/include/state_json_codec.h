@@ -4,6 +4,7 @@
 #include "state_service.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <optional>
 
 // LED patches
 struct LedModePatch {
@@ -11,7 +12,9 @@ struct LedModePatch {
 };
 
 struct LedSolidColorPatch {
-    uint32_t solidColor;
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
 };
 
 struct LedBrightnessPatch {
@@ -41,6 +44,22 @@ struct WiFiScanNetwork {
     String auth;
 };
 
+struct WiFiStaStatusResponse {
+    String ssid;
+    String ip;
+    int32_t rssi;
+};
+
+struct WiFiApStatusResponse {
+    String ssid;
+    String ip;
+};
+
+struct WifiStatusResponse {
+    std::optional<WiFiStaStatusResponse> sta;
+    std::optional<WiFiApStatusResponse> ap;
+};
+
 static const uint8_t MAX_WIFI_SCAN_NETWORKS = 20;
 
 struct WiFiScanResult {
@@ -52,6 +71,8 @@ struct WiFiScanResult {
 void serializeLedState(JsonObject obj, const LedState &led);
 void serializeWiFiState(JsonObject obj, const WiFiState &wifi);
 void serializeSystemState(JsonObject obj, const SystemState &system);
+void serializeWiFiStatus(JsonObject obj, const WifiStatusResponse &status);
+String getWiFiStatusJson(const WifiStatusResponse &status);
 // void serializeNetworkState(JsonObject obj, const NetworkState &network);
 // void serializeDeviceState(JsonObject obj, const DeviceState &device);
 

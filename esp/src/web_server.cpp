@@ -7,6 +7,7 @@
 #include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
 #include <WiFi.h>
+#include <optional>
 
 static AsyncWebServer server(80);
 static AsyncWebSocket ws("/ws");
@@ -467,7 +468,7 @@ static void handleApiLedsSolidColorPost(AsyncWebServerRequest *request,
     }
 
     updateLedMode(LedMode::Solid);
-    updateLedSolidColor(patch.solidColor);
+    updateLedSolidColor(patch.red, patch.green, patch.blue);
 
     request->send(200, "application/json", getLedJson());
 }
@@ -571,6 +572,35 @@ static void handleApiSettingsPost(AsyncWebServerRequest *request, uint8_t *data,
     request->send(200, "application/json", getSystemJson());
 }
 
+static void handleApiWifiStatusGet(AsyncWebServerRequest *request) {
+    std::optional<WiFiStaStatusResponse> staResponse;
+    std::optional<WiFiApStatusResponse> apResponse;
+
+    if (WiFi.getMode() == WIFI_MODE_STA || WiFi.getMode() == WIFI_MODE_APSTA) {
+        if (WiFi.status() == WL_CONNECTED) {
+            WiFiStaStatusResponse sta;
+            sta.ssid = WiFi.SSID();
+            sta.ip = WiFi.localIP().toString();
+            sta.rssi = WiFi.RSSI();
+            staResponse = sta;
+        }
+    }
+
+    if (WiFi.getMode() == WIFI_MODE_AP || WiFi.getMode() == WIFI_MODE_APSTA) {
+        WiFiApStatusResponse ap;
+        ap.ssid = WiFi.softAPSSID();
+        ap.ip = WiFi.softAPIP().toString();
+        apResponse = ap;
+    }
+
+    WifiStatusResponse response;
+
+    response.sta = staResponse;
+    response.ap = apResponse;
+
+    request->send(200, "application/json", getWiFiStatusJson(response));
+}
+
 void setupWebServer() {
     DefaultHeaders::Instance().addHeader("Connection", "keep-alive");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
@@ -581,8 +611,8 @@ void setupWebServer() {
 
     // https://claude.ai/chat/5b2a2135-00cd-47c0-899e-39ffb555cb19
 
+    // leds
     server.on("/api/leds", HTTP_GET, handleApiLedsGet);
-    server.on("/api/settings", HTTP_GET, handleApiSettingsGet);
     server.on(
         "/api/leds/mode", HTTP_POST,
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
@@ -600,10 +630,15 @@ void setupWebServer() {
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
         handleApiLedsSpeedPost);
 
+    // wifi
     server.on(
         "/api/wifi/connect", HTTP_POST,
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
         handleApiWifiConnectPost);
+    server.on("/api/wifi/status", HTTP_GET, handleApiWifiStatusGet);
+
+    // settings
+    server.on("/api/settings", HTTP_GET, handleApiSettingsGet);
     server.on(
         "/api/settings", HTTP_POST,
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,

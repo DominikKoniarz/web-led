@@ -53,13 +53,6 @@ uint16_t speedToIntervalMs(uint16_t speedPercent, uint16_t slowMs,
     return static_cast<uint16_t>(map(bounded, 0, 100, slowMs, fastMs));
 }
 
-CRGB colorFromHex(uint32_t color) {
-    const uint8_t r = static_cast<uint8_t>((color >> 16) & 0xFF);
-    const uint8_t g = static_cast<uint8_t>((color >> 8) & 0xFF);
-    const uint8_t b = static_cast<uint8_t>(color & 0xFF);
-    return CRGB(r, g, b);
-}
-
 void clearUnusedLeds(uint16_t activeCount) {
     if (activeCount >= GLOBAL_LED_LIMIT) {
         return;
@@ -221,7 +214,8 @@ void ledRuntimeInit() {
 void ledRuntimeTick() {
     const AppState &state = stateServiceGet();
     const uint16_t activeCount = clampActiveLedCount(state.system.ledCount);
-    const CRGB solidColor = colorFromHex(state.led.solidColor);
+    const CRGB solidColor(state.led.solidColor.red, state.led.solidColor.green,
+                          state.led.solidColor.blue);
     const unsigned long nowMs = millis();
 
     FastLED.setBrightness(toFastLEDBrightness(state.led.brightnessPercent));
