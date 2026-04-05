@@ -35,6 +35,9 @@ static void onWiFiEvent(WiFiEvent_t event) {
     case ARDUINO_EVENT_WIFI_AP_START:
         Serial.println("[WiFi] AP started");
         break;
+    case ARDUINO_EVENT_WIFI_AP_STOP:
+        Serial.println("[WiFi] AP stopped");
+        break;
     default:
         Serial.println("[WiFi] Unhandled event: " + String(event));
         break;
@@ -44,28 +47,40 @@ static void onWiFiEvent(WiFiEvent_t event) {
 void setupWiFi() {
     Serial.println("[WiFi] Initializing WiFi...");
     WiFi.onEvent(onWiFiEvent);
-    WiFi.mode(WIFI_AP_STA);
+
     WiFi.setAutoReconnect(true);
     WiFi.begin(ssid, password);
+    Serial.println("[WiFi] Called WiFi.begin() with SSID: " + ssid);
 
     // wait for connection, but don't block forever if credentials are wrong
-    unsigned long connectStartMs = millis();
+    // unsigned long connectStartMs = millis();
 
-    while (WiFi.status() != WL_CONNECTED &&
-           millis() - connectStartMs < CONNECT_TIMEOUT_MS) {
-        delay(1000);
-        Serial.print("[WiFi] Connecting to WiFi... " +
-                     String((millis() - connectStartMs) / 1000) + "s\r");
+    // while (WiFi.status() != WL_CONNECTED &&
+    //        millis() - connectStartMs < CONNECT_TIMEOUT_MS) {
+    //     delay(1000);
+    //     Serial.print("[WiFi] Connecting to WiFi... " +
+    //                  String((millis() - connectStartMs) / 1000) + "s\r");
+    // }
+    // Serial.println("[WiFi] STA Connection attempt finished");
+
+    // TODO: work here and only enable it when needed
+    if (WiFi.softAP(AP_SSID, AP_PASSWORD)) {
+        Serial.println("[WiFi] AP started with SSID: " + AP_SSID);
+
+        // set custom IP for AP
+        IPAddress apIP(10, 0, 0, 1);
+        IPAddress netMsk(255, 255, 255, 0);
+        WiFi.softAPConfig(apIP, apIP, netMsk);
+        Serial.println("[WiFi] AP Configured");
+        Serial.println("[WiFi] AP IP address: " + WiFi.softAPIP().toString());
+        Serial.println("[WiFi] AP Mask: " + WiFi.softAPSubnetMask().toString());
+
+        if (WiFi.softAPbandwidth(WIFI_BW_HT20)) {
+            Serial.println("[WiFi] AP bandwidth set to 20 MHz");
+        } else {
+            Serial.println("[WiFi] Failed to set AP bandwidth");
+        }
+    } else {
+        Serial.println("[WiFi] Failed to start AP");
     }
-    Serial.println("[WiFi] STA Connection attempt finished");
-
-    WiFi.softAP(AP_SSID, AP_PASSWORD);
-
-    // set custom IP for AP
-    IPAddress apIP(10, 0, 0, 1);
-    IPAddress netMsk(255, 255, 255, 0);
-    WiFi.softAPConfig(apIP, apIP, netMsk);
-    Serial.println("[WiFi] AP Configured");
-    Serial.println("[WiFi] AP IP address: " + WiFi.softAPIP().toString());
-    Serial.println("[WiFi] AP Mask: " + WiFi.softAPSubnetMask().toString());
 }

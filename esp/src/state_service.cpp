@@ -18,8 +18,8 @@ static uint16_t clampGlobalLedCount(uint16_t ledCount) {
 void stateServiceInitDefaults() {
     // gState.led.mode = LedMode::Solid;
     gState.led.mode = LedMode::Rainbow;
-    gState.led.brightnessPercent = 40;
-    gState.led.speedPercent = 100;
+    gState.led.brightnessPercent = 30;
+    gState.led.speedPercent = 75;
     gState.led.animationSpeed = 100;
     gState.led.solidColor = 0x00FFFFFF;
 
