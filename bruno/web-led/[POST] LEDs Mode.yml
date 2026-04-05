@@ -1,0 +1,21 @@
+info:
+  name: "[POST] LEDs Mode (handleApiLedsModePost)"
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{HOST_BASE_URL}}/api/leds/mode"
+  body:
+    type: json
+    data: |-
+      {
+        "mode": "rainbow"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
