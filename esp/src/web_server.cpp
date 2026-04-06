@@ -160,16 +160,16 @@ static bool parseJsonBody(uint8_t *data, size_t len, JsonDocument &doc,
     return true;
 }
 
-static void handleApiLedsGet(AsyncWebServerRequest *request) {
+static void handleLedsGet(AsyncWebServerRequest *request) {
     request->send(200, "application/json", getLedJson());
 }
 
-static void handleApiSettingsGet(AsyncWebServerRequest *request) {
+static void handleSettingsGet(AsyncWebServerRequest *request) {
     request->send(200, "application/json", getSystemJson());
 }
 
-static void handleApiLedsModePost(AsyncWebServerRequest *request, uint8_t *data,
-                                  size_t len, size_t index, size_t total) {
+static void handleLedsModePost(AsyncWebServerRequest *request, uint8_t *data,
+                               size_t len, size_t index, size_t total) {
     (void)total;
     (void)index;
 
@@ -192,9 +192,9 @@ static void handleApiLedsModePost(AsyncWebServerRequest *request, uint8_t *data,
     request->send(200, "application/json", getLedJson());
 }
 
-static void handleApiLedsSolidColorPost(AsyncWebServerRequest *request,
-                                        uint8_t *data, size_t len, size_t index,
-                                        size_t total) {
+static void handleLedsSolidColorPost(AsyncWebServerRequest *request,
+                                     uint8_t *data, size_t len, size_t index,
+                                     size_t total) {
     (void)total;
     (void)index;
 
@@ -218,9 +218,9 @@ static void handleApiLedsSolidColorPost(AsyncWebServerRequest *request,
     request->send(200, "application/json", getLedJson());
 }
 
-static void handleApiLedsBrightnessPost(AsyncWebServerRequest *request,
-                                        uint8_t *data, size_t len, size_t index,
-                                        size_t total) {
+static void handleLedsBrightnessPost(AsyncWebServerRequest *request,
+                                     uint8_t *data, size_t len, size_t index,
+                                     size_t total) {
     (void)total;
     (void)index;
 
@@ -243,9 +243,8 @@ static void handleApiLedsBrightnessPost(AsyncWebServerRequest *request,
     request->send(200, "application/json", getLedJson());
 }
 
-static void handleApiLedsSpeedPost(AsyncWebServerRequest *request,
-                                   uint8_t *data, size_t len, size_t index,
-                                   size_t total) {
+static void handleLedsSpeedPost(AsyncWebServerRequest *request, uint8_t *data,
+                                size_t len, size_t index, size_t total) {
     (void)total;
     (void)index;
 
@@ -268,9 +267,8 @@ static void handleApiLedsSpeedPost(AsyncWebServerRequest *request,
     request->send(200, "application/json", getLedJson());
 }
 
-static void handleApiWifiConnectPost(AsyncWebServerRequest *request,
-                                     uint8_t *data, size_t len, size_t index,
-                                     size_t total) {
+static void handleWifiConnectPost(AsyncWebServerRequest *request, uint8_t *data,
+                                  size_t len, size_t index, size_t total) {
     (void)total;
     (void)index;
 
@@ -293,8 +291,8 @@ static void handleApiWifiConnectPost(AsyncWebServerRequest *request,
     WiFi.begin(patch.ssid.c_str(), patch.password.c_str());
 }
 
-static void handleApiSettingsPost(AsyncWebServerRequest *request, uint8_t *data,
-                                  size_t len, size_t index, size_t total) {
+static void handleSettingsPost(AsyncWebServerRequest *request, uint8_t *data,
+                               size_t len, size_t index, size_t total) {
     (void)total;
     (void)index;
 
@@ -317,7 +315,7 @@ static void handleApiSettingsPost(AsyncWebServerRequest *request, uint8_t *data,
     request->send(200, "application/json", getSystemJson());
 }
 
-static void handleApiWifiStatusGet(AsyncWebServerRequest *request) {
+static void handleWifiStatusGet(AsyncWebServerRequest *request) {
     std::optional<WiFiStaStatusResponse> staResponse;
     std::optional<WiFiApStatusResponse> apResponse;
 
@@ -346,7 +344,7 @@ static void handleApiWifiStatusGet(AsyncWebServerRequest *request) {
     request->send(200, "application/json", getWiFiStatusJson(response));
 }
 
-static void handleApiWifiScanGet(AsyncWebServerRequest *request) {
+static void handleWifiScanGet(AsyncWebServerRequest *request) {
     auto scanState = WiFi.scanComplete();
 
     if (scanState == WIFI_SCAN_RUNNING) {
@@ -449,38 +447,38 @@ void setupWebServer() {
     // https://claude.ai/chat/5b2a2135-00cd-47c0-899e-39ffb555cb19
 
     // leds
-    server.on("/api/leds", HTTP_GET, handleApiLedsGet);
+    server.on("/api/leds", HTTP_GET, handleLedsGet);
     server.on(
         "/api/leds/mode", HTTP_POST,
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
-        handleApiLedsModePost);
+        handleLedsModePost);
     server.on(
         "/api/leds/color", HTTP_POST,
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
-        handleApiLedsSolidColorPost);
+        handleLedsSolidColorPost);
     server.on(
         "/api/leds/brightness", HTTP_POST,
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
-        handleApiLedsBrightnessPost);
+        handleLedsBrightnessPost);
     server.on(
         "/api/leds/speed", HTTP_POST,
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
-        handleApiLedsSpeedPost);
+        handleLedsSpeedPost);
 
     // wifi
     server.on(
         "/api/wifi/connect", HTTP_POST,
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
-        handleApiWifiConnectPost);
-    server.on("/api/wifi/status", HTTP_GET, handleApiWifiStatusGet);
-    server.on("/api/wifi/scan", HTTP_GET, handleApiWifiScanGet);
+        handleWifiConnectPost);
+    server.on("/api/wifi/status", HTTP_GET, handleWifiStatusGet);
+    server.on("/api/wifi/scan", HTTP_GET, handleWifiScanGet);
 
     // settings
-    server.on("/api/settings", HTTP_GET, handleApiSettingsGet);
+    server.on("/api/settings", HTTP_GET, handleSettingsGet);
     server.on(
         "/api/settings", HTTP_POST,
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
-        handleApiSettingsPost);
+        handleSettingsPost);
 
     server.on("/api/system/health", HTTP_GET, handleSystemHealthGet);
 
