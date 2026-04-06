@@ -1,5 +1,6 @@
 #include "LittleFS.h"
 #include "led_runtime.h"
+#include "mdns_setup.h"
 #include "state_service.h"
 #include "web_server.h"
 #include "wifi_setup.h"
@@ -14,11 +15,12 @@ void setup() {
         return;
     }
 
-    // This is probably temporary
+    // TODO: work on saving state to the littlefs
     stateServiceInitDefaults();
     ledRuntimeInit();
 
     setupWiFi();
+    setupMdns();
 
     setupWebServer();
 }
