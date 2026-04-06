@@ -62,6 +62,17 @@ struct WifiStatusResponse {
     std::optional<WiFiApStatusResponse> ap;
 };
 
+struct SystemHealthResponse {
+    float cpuTempC;
+    uint32_t uptimeMs;
+    uint32_t uptimeSec;
+    uint32_t freeHeapBytes;
+    uint32_t minFreeHeapBytes;
+    uint16_t ledCount;
+    String chipModel;
+    uint32_t chipRevision;
+};
+
 struct WiFiScanResult {
     WiFiScanStatus status = WiFiScanStatus::Started;
     uint8_t count = 0;
@@ -74,10 +85,12 @@ void serializeLedState(JsonObject obj, const LedState &led);
 void serializeWiFiState(JsonObject obj, const WiFiState &wifi);
 void serializeSystemState(JsonObject obj, const SystemState &system);
 void serializeWiFiStatus(JsonObject obj, const WifiStatusResponse &status);
+void serializeSystemHealth(JsonObject obj, const SystemHealthResponse &health);
 
 String getLedJson();
 String getSystemJson();
 String getWiFiStatusJson(const WifiStatusResponse &status);
+String getSystemHealthJson(const SystemHealthResponse &health);
 
 bool parseLedModePatch(const JsonObjectConst obj, LedModePatch &out,
                        String &error);

@@ -5,6 +5,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
+#include <Esp.h>
 #include <LittleFS.h>
 #include <WiFi.h>
 #include <optional>
@@ -130,10 +131,6 @@ static void handleAssets(AsyncWebServerRequest *request) {
 
     request->send(resp);
 }
-
-// static void handleHealth(AsyncWebServerRequest *request) {
-//     request->send(200, "application/json", stateServiceSystemJson());
-// }
 
 static void sendJsonError(AsyncWebServerRequest *request, int code,
                           const String &message) {
@@ -424,12 +421,29 @@ static void handleApiWifiScanGet(AsyncWebServerRequest *request) {
     request->send(200, "application/json", payload);
 }
 
+static void handleSystemHealthGet(AsyncWebServerRequest *request) {
+    const AppState &state = stateServiceGet();
+
+    const uint32_t uptimeMs = static_cast<uint32_t>(millis());
+
+    SystemHealthResponse health;
+    health.cpuTempC = temperatureRead();
+    health.uptimeMs = uptimeMs;
+    health.uptimeSec = uptimeMs / 1000;
+    health.freeHeapBytes = ESP.getFreeHeap();
+    health.minFreeHeapBytes = ESP.getMinFreeHeap();
+    health.ledCount = state.system.ledCount;
+    health.chipModel = ESP.getChipModel();
+    health.chipRevision = ESP.getChipRevision();
+
+    request->send(200, "application/json", getSystemHealthJson(health));
+}
+
 void setupWebServer() {
     DefaultHeaders::Instance().addHeader("Connection", "keep-alive");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
 
     server.on("/", HTTP_GET, handleRoot);
-    // server.on("/health", HTTP_GET, handleHealth);
     server.on("/assets/*", HTTP_GET, handleAssets);
 
     // https://claude.ai/chat/5b2a2135-00cd-47c0-899e-39ffb555cb19
@@ -467,6 +481,8 @@ void setupWebServer() {
         "/api/settings", HTTP_POST,
         [](AsyncWebServerRequest *request) { (void)request; }, nullptr,
         handleApiSettingsPost);
+
+    server.on("/api/system/health", HTTP_GET, handleSystemHealthGet);
 
     server.begin();
 

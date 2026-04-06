@@ -69,6 +69,17 @@ void serializeWiFiStatus(JsonObject obj, const WifiStatusResponse &status) {
     }
 }
 
+void serializeSystemHealth(JsonObject obj, const SystemHealthResponse &health) {
+    obj["cpuTempC"] = health.cpuTempC;
+    obj["uptimeMs"] = health.uptimeMs;
+    obj["uptimeSec"] = health.uptimeSec;
+    obj["freeHeapBytes"] = health.freeHeapBytes;
+    obj["minFreeHeapBytes"] = health.minFreeHeapBytes;
+    obj["ledCount"] = health.ledCount;
+    obj["chipModel"] = health.chipModel;
+    obj["chipRevision"] = health.chipRevision;
+}
+
 String getLedJson() {
     const AppState &gState = stateServiceGet();
 
@@ -91,6 +102,13 @@ String getWiFiStatusJson(const WifiStatusResponse &status) {
     JsonDocument doc;
     JsonObject obj = doc.to<JsonObject>();
     serializeWiFiStatus(obj, status);
+    return serializeDoc(doc);
+}
+
+String getSystemHealthJson(const SystemHealthResponse &health) {
+    JsonDocument doc;
+    JsonObject obj = doc.to<JsonObject>();
+    serializeSystemHealth(obj, health);
     return serializeDoc(doc);
 }
 
