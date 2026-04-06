@@ -12,7 +12,7 @@ Key modules currently:
 - `src/wifi_setup.cpp` - Wi-Fi setup/reconnect path
 - `src/web_server.cpp` - HTTP API/static serving
 - `src/state_service.cpp` - in-memory canonical state service
-- `src/state_json_codec.cpp` - typed serializers/deserializers for state JSON
+- `src/json.cpp` - typed serializers/deserializers for state JSON
 
 Headers are in `include/`.
 
@@ -30,11 +30,9 @@ Avoid direct ad-hoc JSON mutation spread across handlers.
 
 Domain API groups exist under:
 
+- `/api/leds`
 - `/api/wifi`
-- `/api/led`
-- `/api/system`
-- `/api/state`
-- `/api/contracts`
+- `/api/settings`
 
 Keep request and response shape stable unless explicitly changing contract version.
 

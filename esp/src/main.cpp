@@ -30,9 +30,6 @@ void loop() {
 
     delay(16); // run at ~60Hz
 
-    // wifiSetupTick();
-
-    cleanupClients();
     ledRuntimeTick();
 
     const unsigned long now = millis();

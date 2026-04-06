@@ -8,7 +8,16 @@ WebLED is an ESP32-C6 firmware + web UI project.
 
 - `esp/` contains firmware (PlatformIO, Arduino framework).
 - `web/` contains the Vite + React UI.
+- `bruno/` contains Bruno API request collections used to exercise and verify HTTP routes.
 - Build system uses custom PlatformIO layout paths pointing into `esp/`.
+
+## API Collection (Bruno)
+
+The `bruno/web-led/` collection should track the firmware HTTP API contract.
+
+- When adding a new HTTP route, add the corresponding Bruno request file(s).
+- When updating an existing HTTP route (path, method, request body, or response contract), update the matching Bruno request definitions.
+- Keep Bruno examples aligned with current router behavior so manual API verification stays reliable.
 
 ## Agent Context Discovery Rules
 
@@ -44,7 +53,8 @@ When adding firmware files, place them under `esp/src` and `esp/include`.
 For firmware changes:
 
 1. Run `pio run` from repository root.
-2. Report success/failure and relevant warnings.
+2. If HTTP router endpoints changed, update the Bruno collection under `bruno/web-led/` to match.
+3. Report success/failure and relevant warnings.
 
 For web changes:
 

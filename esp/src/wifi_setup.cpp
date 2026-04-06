@@ -1,7 +1,6 @@
 #include "wifi_setup.h"
 #include "WiFi.h"
 #include "secrets.h"
-#include "state_json_codec.h"
 #include <Arduino.h>
 
 static const String ssid = WIFI_SSID;
@@ -25,8 +24,6 @@ static void onWiFiEvent(WiFiEvent_t event) {
         break;
     case ARDUINO_EVENT_WIFI_STA_GOT_IP:
         Serial.println("[WiFi] STA got IP: " + WiFi.localIP().toString());
-
-        updateWiFiState(ssid, WiFi.localIP().toString(), WiFi.RSSI());
         break;
     case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
         Serial.println("[WiFi] STA disconnected (AutoReconnect will retry)");
