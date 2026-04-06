@@ -442,9 +442,8 @@ void setupWebServer() {
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
 
     server.on("/", HTTP_GET, handleRoot);
+    // TODO: handle webmanifest (and favicon?)
     server.on("/assets/*", HTTP_GET, handleAssets);
-
-    // https://claude.ai/chat/5b2a2135-00cd-47c0-899e-39ffb555cb19
 
     // leds
     server.on("/api/leds", HTTP_GET, handleLedsGet);
