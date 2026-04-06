@@ -1,0 +1,22 @@
+info:
+    name: "[POST] WiFi Connect (handleApiWifiConnectPost)"
+    type: http
+    seq: 6
+
+http:
+    method: POST
+    url: "{{HOST_BASE_URL}}/api/wifi/connect"
+    auth: inherit
+    body:
+        type: json
+        data: |-
+            {
+              "ssid": "YourNetwork",
+              "password": "YourPassword"
+            }
+
+settings:
+    encodeUrl: true
+    timeout: 0
+    followRedirects: true
+    maxRedirects: 5

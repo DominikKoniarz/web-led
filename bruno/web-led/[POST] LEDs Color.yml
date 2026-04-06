@@ -1,0 +1,23 @@
+info:
+  name: "[POST] LEDs Color (handleApiLedsSolidColorPost)"
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{HOST_BASE_URL}}/api/leds/color"
+  body:
+    type: json
+    data: |-
+      {
+        "red": 15,
+        "green": 115,
+        "blue": 215
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

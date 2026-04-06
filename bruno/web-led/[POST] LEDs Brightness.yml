@@ -1,0 +1,21 @@
+info:
+  name: "[POST] LEDs Brightness (handleApiLedsBrightnessPost)"
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{HOST_BASE_URL}}/api/leds/brightness"
+  body:
+    type: json
+    data: |-
+      {
+        "brightnessPercent": 15
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

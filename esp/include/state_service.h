@@ -4,70 +4,62 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 
-enum class WiFiModeState { Boot, Sta, Ap, ApSta };
+enum class LedMode {
+    Solid,
+    Rainbow,
+    Breathing,
+    Chase,
+    Sparkle,
+    Fire,
+    Wave,
+    Off,
+};
 
-enum class WiFiLinkState { Idle, Connecting, Connected, Disconnected, Failed };
-
-enum class LedMode { Off, Solid, Rainbow, Breathing };
+struct RgbColor {
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+};
 
 struct LedState {
-    bool enabled;
     LedMode mode;
-    uint8_t brightness;
-    uint16_t speed;
-    uint16_t ledCount;
-    uint32_t solidColor;
+    uint8_t brightnessPercent;
+    uint16_t speedPercent;
+    RgbColor solidColor;
+    uint16_t animationSpeed;
 };
 
 struct WiFiState {
-    WiFiModeState mode;
-    WiFiLinkState link;
     String ssid;
     String ip;
     int32_t rssi;
-    bool hasCredentials;
 };
 
 struct NetworkState {
     bool dhcpEnabled;
     String ip;
     String subnet;
-    String gateway;
-    String dns1;
-    String dns2;
 };
 
-struct DeviceState {
-    String name;
-    String firmwareVersion;
-    String hardware;
+struct SystemState {
+    uint16_t ledCount;
 };
 
 struct AppState {
     LedState led;
     WiFiState wifi;
     NetworkState network;
-    DeviceState device;
+    SystemState system;
 };
 
 void stateServiceInitDefaults();
 const AppState &stateServiceGet();
 
-void stateServiceUpdateWiFiStatus(WiFiModeState mode, WiFiLinkState link,
-                                  const String &ssid, const String &ip,
-                                  int32_t rssi);
+void updateLedMode(LedMode mode);
+void updateLedBrightness(uint8_t brightness);
+void updateLedSpeed(uint16_t speed);
+void updateLedSolidColor(uint8_t red, uint8_t green, uint8_t blue);
 
-void stateServiceSetWiFiCredentials(const String &ssid, bool hasCredentials);
-
-bool stateServiceApplyLedPatch(JsonVariantConst patch, String &error);
-bool stateServiceApplyWiFiPatch(JsonVariantConst patch, String &error);
-bool stateServiceApplySystemPatch(JsonVariantConst patch, String &error);
-
-String stateServiceLedJson();
-String stateServiceWiFiJson();
-String stateServiceSystemJson();
-String stateServiceFullJson();
-
-String stateServiceApiContractJson();
+void updateSystemLedCount(uint16_t ledCount);
 
 #endif // STATE_SERVICE_H
