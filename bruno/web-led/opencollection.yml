@@ -17,7 +17,7 @@ config:
 request:
   variables:
     - name: HOST_BASE_URL
-      value: http://192.168.0.148
+      value: http://192.168.0.149
 bundled: false
 extensions:
   bruno:
