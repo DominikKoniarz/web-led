@@ -40,12 +40,6 @@ void serializeLedState(JsonObject obj, const LedState &led) {
     obj["blue"] = led.solidColor.blue;
 }
 
-void serializeWiFiState(JsonObject obj, const WiFiState &wifi) {
-    obj["ssid"] = wifi.ssid;
-    obj["ip"] = wifi.ip;
-    obj["rssi"] = wifi.rssi;
-}
-
 void serializeSystemState(JsonObject obj, const SystemState &system) {
     obj["ledCount"] = system.ledCount;
 }

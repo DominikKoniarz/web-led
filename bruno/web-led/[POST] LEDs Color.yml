@@ -11,8 +11,8 @@ http:
     data: |-
       {
         "red": 255,
-        "green": 0,
-        "blue": 150
+        "green": 150,
+        "blue": 0
       }
   auth: inherit
 

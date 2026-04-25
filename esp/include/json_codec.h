@@ -8,8 +8,6 @@
 
 static const uint8_t MAX_WIFI_SCAN_NETWORKS = 20;
 
-enum class WiFiScanStatus { Started, Running, Complete };
-
 // LED patches
 struct LedModePatch {
     LedMode mode;
@@ -39,13 +37,6 @@ struct WiFiConnectPatch {
     String password;
 };
 
-struct WiFiScanNetwork {
-    String ssid;
-    int32_t rssi = 0;
-    int32_t channel = 0;
-    String auth;
-};
-
 struct WiFiStaStatusResponse {
     String ssid;
     String ip;
@@ -73,16 +64,9 @@ struct SystemHealthResponse {
     uint32_t chipRevision;
 };
 
-struct WiFiScanResult {
-    WiFiScanStatus status = WiFiScanStatus::Started;
-    uint8_t count = 0;
-    WiFiScanNetwork networks[MAX_WIFI_SCAN_NETWORKS];
-};
-
 String serializeDoc(JsonDocument &doc);
 
 void serializeLedState(JsonObject obj, const LedState &led);
-void serializeWiFiState(JsonObject obj, const WiFiState &wifi);
 void serializeSystemState(JsonObject obj, const SystemState &system);
 void serializeWiFiStatus(JsonObject obj, const WifiStatusResponse &status);
 void serializeSystemHealth(JsonObject obj, const SystemHealthResponse &health);

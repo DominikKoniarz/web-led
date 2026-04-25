@@ -10,7 +10,7 @@ http:
     type: json
     data: |-
       {
-        "brightnessPercent": 15
+        "brightnessPercent": 56
       }
   auth: inherit
 

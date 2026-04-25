@@ -26,20 +26,13 @@ struct LedState {
     uint8_t brightnessPercent;
     uint16_t speedPercent;
     RgbColor solidColor;
-    uint16_t animationSpeed;
 };
 
-struct WiFiState {
-    String ssid;
-    String ip;
-    int32_t rssi;
-};
-
-struct NetworkState {
-    bool dhcpEnabled;
-    String ip;
-    String subnet;
-};
+// struct NetworkState {
+//     bool dhcpEnabled;
+//     String ip;
+//     String subnet;
+// };
 
 struct SystemState {
     uint16_t ledCount;
@@ -47,8 +40,7 @@ struct SystemState {
 
 struct AppState {
     LedState led;
-    WiFiState wifi;
-    NetworkState network;
+    // NetworkState network;
     SystemState system;
 };
 
@@ -57,8 +49,6 @@ const AppState &stateServiceGet();
 bool stateServiceLoadFromFs();
 bool stateServiceSaveToFs();
 void stateServiceTick();
-bool stateServiceIsDirty();
-uint32_t stateServiceLastDirtyAtMs();
 void stateServiceMarkDirty();
 
 void updateLedMode(LedMode mode);

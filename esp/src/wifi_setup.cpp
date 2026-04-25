@@ -11,7 +11,7 @@ static const String password = WIFI_PASSWORD;
 static const String AP_SSID = "webled-setup";
 static const String AP_PASSWORD = "webled-setup";
 
-static const unsigned short CONNECT_TIMEOUT_MS = 15000;
+// static const unsigned short CONNECT_TIMEOUT_MS = 15000;
 
 static void onWiFiEvent(WiFiEvent_t event) {
     switch (event) {

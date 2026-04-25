@@ -81,20 +81,14 @@ static void serializeState(JsonObject root, const AppState &state) {
     led["mode"] = toModeString(state.led.mode);
     led["brightnessPercent"] = state.led.brightnessPercent;
     led["speedPercent"] = state.led.speedPercent;
-    led["animationSpeed"] = state.led.animationSpeed;
     led["red"] = state.led.solidColor.red;
     led["green"] = state.led.solidColor.green;
     led["blue"] = state.led.solidColor.blue;
 
-    JsonObject wifi = root["wifi"].to<JsonObject>();
-    wifi["ssid"] = state.wifi.ssid;
-    wifi["ip"] = state.wifi.ip;
-    wifi["rssi"] = state.wifi.rssi;
-
-    JsonObject network = root["network"].to<JsonObject>();
-    network["dhcpEnabled"] = state.network.dhcpEnabled;
-    network["ip"] = state.network.ip;
-    network["subnet"] = state.network.subnet;
+    // JsonObject network = root["network"].to<JsonObject>();
+    // network["dhcpEnabled"] = state.network.dhcpEnabled;
+    // network["ip"] = state.network.ip;
+    // network["subnet"] = state.network.subnet;
 
     JsonObject system = root["system"].to<JsonObject>();
     system["ledCount"] = state.system.ledCount;
@@ -117,9 +111,6 @@ static void deserializeState(const JsonObjectConst root, AppState &state) {
             const uint16_t speed = led["speedPercent"].as<uint16_t>();
             state.led.speedPercent = speed > 100 ? 100 : speed;
         }
-        if (led["animationSpeed"].is<uint16_t>()) {
-            state.led.animationSpeed = led["animationSpeed"].as<uint16_t>();
-        }
         if (led["red"].is<uint8_t>()) {
             state.led.solidColor.red = led["red"].as<uint8_t>();
         }
@@ -131,31 +122,18 @@ static void deserializeState(const JsonObjectConst root, AppState &state) {
         }
     }
 
-    JsonObjectConst wifi = root["wifi"].as<JsonObjectConst>();
-    if (!wifi.isNull()) {
-        if (wifi["ssid"].is<const char *>()) {
-            state.wifi.ssid = wifi["ssid"].as<String>();
-        }
-        if (wifi["ip"].is<const char *>()) {
-            state.wifi.ip = wifi["ip"].as<String>();
-        }
-        if (wifi["rssi"].is<int32_t>()) {
-            state.wifi.rssi = wifi["rssi"].as<int32_t>();
-        }
-    }
-
-    JsonObjectConst network = root["network"].as<JsonObjectConst>();
-    if (!network.isNull()) {
-        if (network["dhcpEnabled"].is<bool>()) {
-            state.network.dhcpEnabled = network["dhcpEnabled"].as<bool>();
-        }
-        if (network["ip"].is<const char *>()) {
-            state.network.ip = network["ip"].as<String>();
-        }
-        if (network["subnet"].is<const char *>()) {
-            state.network.subnet = network["subnet"].as<String>();
-        }
-    }
+    // JsonObjectConst network = root["network"].as<JsonObjectConst>();
+    // if (!network.isNull()) {
+    //     if (network["dhcpEnabled"].is<bool>()) {
+    //         state.network.dhcpEnabled = network["dhcpEnabled"].as<bool>();
+    //     }
+    //     if (network["ip"].is<const char *>()) {
+    //         state.network.ip = network["ip"].as<String>();
+    //     }
+    //     if (network["subnet"].is<const char *>()) {
+    //         state.network.subnet = network["subnet"].as<String>();
+    //     }
+    // }
 
     JsonObjectConst system = root["system"].as<JsonObjectConst>();
     if (!system.isNull() && system["ledCount"].is<uint16_t>()) {
@@ -168,16 +146,11 @@ void stateServiceInitDefaults() {
     gState.led.mode = LedMode::Rainbow;
     gState.led.brightnessPercent = 30;
     gState.led.speedPercent = 75;
-    gState.led.animationSpeed = 100;
     gState.led.solidColor = {.red = 15, .green = 128, .blue = 100};
 
-    gState.wifi.ssid = "";
-    gState.wifi.ip = "0.0.0.0";
-    gState.wifi.rssi = 0;
-
-    gState.network.dhcpEnabled = true;
-    gState.network.ip = "0.0.0.0";
-    gState.network.subnet = "255.255.255.0";
+    // gState.network.dhcpEnabled = true;
+    // gState.network.ip = "0.0.0.0";
+    // gState.network.subnet = "255.255.255.0";
 
     gState.system.ledCount = 60;
 
@@ -258,10 +231,6 @@ void stateServiceTick() {
 
     stateServiceSaveToFs();
 }
-
-bool stateServiceIsDirty() { return gStateDirty; }
-
-uint32_t stateServiceLastDirtyAtMs() { return gStateDirtyAtMs; }
 
 void stateServiceMarkDirty() {
     gStateDirty = true;

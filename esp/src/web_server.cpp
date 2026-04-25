@@ -11,7 +11,6 @@
 #include <optional>
 
 static AsyncWebServer server(80);
-static String lastBroadcastPayload;
 static unsigned long wifiScanCompletedAtMs = 0;
 
 static const unsigned long WIFI_SCAN_RESULT_MAX_AGE_MS = 15000;
@@ -139,15 +138,6 @@ static void sendJsonError(AsyncWebServerRequest *request, int code,
     String payload;
     serializeJson(doc, payload);
     request->send(code, "application/json", payload);
-}
-
-static bool parseJsonBody(const char *data, JsonDocument &doc, String &error) {
-    DeserializationError deserialization = deserializeJson(doc, data);
-    if (deserialization) {
-        error = String("Invalid JSON: ") + deserialization.c_str();
-        return false;
-    }
-    return true;
 }
 
 static bool parseJsonBody(uint8_t *data, size_t len, JsonDocument &doc,
