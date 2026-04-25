@@ -10,6 +10,7 @@
             "includePath": [
                 "/Volumes/Programming/Projects/WebLED/esp/include",
                 "/Volumes/Programming/Projects/WebLED/esp/src",
+                "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/ESPmDNS/src",
                 "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/LittleFS/src",
                 "/Volumes/Programming/Projects/WebLED/esp/.pio/libdeps/esp32-c6-devkitm-1/FastLED/src",
                 "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/SD/src",
@@ -347,7 +348,6 @@
                 "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/ESP_I2S/src",
                 "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/ESP_NOW/src",
                 "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/ESP_SR/src",
-                "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/ESPmDNS/src",
                 "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/Ethernet/src",
                 "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/FFat/src",
                 "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/HTTPClient/src",
@@ -379,6 +379,7 @@
                 "path": [
                     "/Volumes/Programming/Projects/WebLED/esp/include",
                     "/Volumes/Programming/Projects/WebLED/esp/src",
+                    "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/ESPmDNS/src",
                     "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/LittleFS/src",
                     "/Volumes/Programming/Projects/WebLED/esp/.pio/libdeps/esp32-c6-devkitm-1/FastLED/src",
                     "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/SD/src",
@@ -716,7 +717,6 @@
                     "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/ESP_I2S/src",
                     "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/ESP_NOW/src",
                     "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/ESP_SR/src",
-                    "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/ESPmDNS/src",
                     "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/Ethernet/src",
                     "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/FFat/src",
                     "/Users/dominikkoniarz/.platformio/packages/framework-arduinoespressif32/libraries/HTTPClient/src",
