@@ -207,18 +207,24 @@ bool parseLedSolidColorPatch(const JsonObjectConst obj, LedSolidColorPatch &out,
 /*
     Example led brightness patch JSON:
     {
-        "brightnessPercent": 128
+        "brightnessPercent": 80
     }
     brightnessPercent must be 0..100
 */
 bool parseLedBrightnessPatch(const JsonObjectConst obj, LedBrightnessPatch &out,
                              String &error) {
     if (!obj["brightnessPercent"].isNull()) {
-        if (!obj["brightnessPercent"].is<uint8_t>()) {
+        if (!obj["brightnessPercent"].is<uint16_t>()) {
             error = "brightnessPercent must be 0..100";
             return false;
         }
-        out.brightness = obj["brightnessPercent"].as<uint8_t>();
+        const uint16_t brightnessPercent =
+            obj["brightnessPercent"].as<uint16_t>();
+        if (brightnessPercent > 100) {
+            error = "brightnessPercent must be 0..100";
+            return false;
+        }
+        out.brightness = static_cast<uint8_t>(brightnessPercent);
     } else {
         error = "brightnessPercent is required";
         return false;
@@ -241,7 +247,12 @@ bool parseLedSpeedPatch(const JsonObjectConst obj, LedSpeedPatch &out,
             error = "speedPercent must be 0..100";
             return false;
         }
-        out.speed = obj["speedPercent"].as<uint16_t>();
+        const uint16_t speedPercent = obj["speedPercent"].as<uint16_t>();
+        if (speedPercent > 100) {
+            error = "speedPercent must be 0..100";
+            return false;
+        }
+        out.speed = speedPercent;
     } else {
         error = "speedPercent is required";
         return false;
