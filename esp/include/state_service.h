@@ -54,6 +54,12 @@ struct AppState {
 
 void stateServiceInitDefaults();
 const AppState &stateServiceGet();
+bool stateServiceLoadFromFs();
+bool stateServiceSaveToFs();
+void stateServiceTick();
+bool stateServiceIsDirty();
+uint32_t stateServiceLastDirtyAtMs();
+void stateServiceMarkDirty();
 
 void updateLedMode(LedMode mode);
 void updateLedBrightness(uint8_t brightness);

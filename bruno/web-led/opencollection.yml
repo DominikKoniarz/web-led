@@ -18,6 +18,9 @@ request:
   variables:
     - name: HOST_BASE_URL
       value: http://192.168.0.149
+    - name: HOST_BASE_URL
+      value: http://webled.local
+      disabled: true
 bundled: false
 extensions:
   bruno:

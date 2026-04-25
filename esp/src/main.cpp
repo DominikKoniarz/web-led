@@ -15,8 +15,8 @@ void setup() {
         return;
     }
 
-    // TODO: work on saving state to the littlefs
     stateServiceInitDefaults();
+    stateServiceLoadFromFs();
     ledRuntimeInit();
 
     setupWiFi();
@@ -28,5 +28,6 @@ void setup() {
 void loop() {
     delay(16); // run at ~60Hz
 
+    stateServiceTick();
     ledRuntimeTick();
 }
