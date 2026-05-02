@@ -1,5 +1,5 @@
-import path from "node:path";
-import { pathToFileURL } from "node:url";
+import path from "path";
+import { pathToFileURL } from "url";
 
 const docPath = path.resolve("docs", "api", "index.html");
 const fileUrl = pathToFileURL(docPath).href;
