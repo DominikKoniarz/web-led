@@ -1,5 +1,3 @@
-"use client";
-
 import { Radio } from "lucide-react";
 
 export default function Header() {
