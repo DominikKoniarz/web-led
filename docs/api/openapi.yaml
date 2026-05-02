@@ -1,0 +1,561 @@
+openapi: 3.1.0
+info:
+    title: WebLED Firmware HTTP API
+    version: 0.1.0
+    description: |
+        HTTP contract exposed by ESP32-C6 firmware in WebLED.
+
+        Source of truth for implementation:
+        - esp/src/web_server.cpp
+        - esp/src/json_codec.cpp
+    license:
+        name: Proprietary
+        identifier: LicenseRef-Proprietary
+
+servers:
+    - url: http://webled.local
+      description: mDNS host (typical)
+    - url: http://{deviceIp}
+      description: Direct device IP
+      variables:
+          deviceIp:
+              default: 192.168.4.1
+
+security: []
+
+tags:
+    - name: LEDs
+      description: LED runtime state and control endpoints.
+    - name: WiFi
+      description: WiFi connection, status, and scanning endpoints.
+    - name: Settings
+      description: Device configuration endpoints.
+    - name: System
+      description: Firmware runtime health endpoints.
+
+paths:
+    /api/leds:
+        get:
+            tags: [LEDs]
+            summary: Get current LED state
+            operationId: getLeds
+            responses:
+                "200":
+                    description: Current LED state
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/LedState"
+
+    /api/leds/mode:
+        post:
+            tags: [LEDs]
+            summary: Set LED mode
+            operationId: setLedMode
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/LedModePatch"
+                        examples:
+                            rainbow:
+                                value:
+                                    mode: rainbow
+            responses:
+                "200":
+                    description: Updated LED state
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/LedState"
+                "400":
+                    description: Invalid request body
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+
+    /api/leds/color:
+        post:
+            tags: [LEDs]
+            summary: Set solid RGB color (and force mode to solid)
+            operationId: setLedColor
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/LedSolidColorPatch"
+                        examples:
+                            orange:
+                                value:
+                                    red: 255
+                                    green: 150
+                                    blue: 0
+            responses:
+                "200":
+                    description: Updated LED state
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/LedState"
+                "400":
+                    description: Invalid request body
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+
+    /api/leds/brightness:
+        post:
+            tags: [LEDs]
+            summary: Set brightness percentage
+            operationId: setLedBrightness
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/LedBrightnessPatch"
+                        examples:
+                            medium:
+                                value:
+                                    brightnessPercent: 56
+            responses:
+                "200":
+                    description: Updated LED state
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/LedState"
+                "400":
+                    description: Invalid request body
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+
+    /api/leds/speed:
+        post:
+            tags: [LEDs]
+            summary: Set animation speed percentage
+            operationId: setLedSpeed
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/LedSpeedPatch"
+                        examples:
+                            balanced:
+                                value:
+                                    speedPercent: 50
+            responses:
+                "200":
+                    description: Updated LED state
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/LedState"
+                "400":
+                    description: Invalid request body
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+
+    /api/wifi/connect:
+        post:
+            tags: [WiFi]
+            summary: Start STA connection attempt
+            description: |
+                Triggers WiFi.begin(ssid, password).
+                The firmware responds immediately and does not block for association.
+            operationId: connectWifi
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/WiFiConnectPatch"
+                        examples:
+                            sample:
+                                value:
+                                    ssid: YourNetwork
+                                    password: YourPassword
+            responses:
+                "204":
+                    description: Accepted. No response body.
+                "400":
+                    description: Invalid request body
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+
+    /api/wifi/status:
+        get:
+            tags: [WiFi]
+            summary: Get AP/STA connectivity status
+            operationId: getWifiStatus
+            responses:
+                "200":
+                    description: WiFi status for station and soft AP interfaces
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/WifiStatusResponse"
+
+    /api/wifi/scan:
+        get:
+            tags: [WiFi]
+            summary: Run or read asynchronous WiFi scan
+            description: |
+                Returns one of these 200 states:
+                - started: new scan was started
+                - running: scan in progress
+                - complete: scan result payload with networks
+            operationId: scanWifi
+            responses:
+                "200":
+                    description: Scan state response
+                    content:
+                        application/json:
+                            schema:
+                                oneOf:
+                                    - $ref: "#/components/schemas/WifiScanStartedResponse"
+                                    - $ref: "#/components/schemas/WifiScanRunningResponse"
+                                    - $ref: "#/components/schemas/WifiScanCompleteResponse"
+                            examples:
+                                started:
+                                    value:
+                                        status: started
+                                running:
+                                    value:
+                                        status: running
+                                complete:
+                                    value:
+                                        status: complete
+                                        count: 2
+                                        networks:
+                                            - ssid: HomeWiFi
+                                              rssi: -47
+                                              channel: 6
+                                              auth: wpa2_psk
+                                            - ssid: Guest
+                                              rssi: -65
+                                              channel: 11
+                                              auth: open
+                "500":
+                    description: Failed to start scan
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+
+    /api/settings:
+        get:
+            tags: [Settings]
+            summary: Get system settings
+            operationId: getSettings
+            responses:
+                "200":
+                    description: System settings
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/SettingsState"
+
+        post:
+            tags: [Settings]
+            summary: Update system settings
+            operationId: setSettings
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/SettingsPatch"
+                        examples:
+                            fiveLeds:
+                                value:
+                                    ledCount: 5
+            responses:
+                "200":
+                    description: Updated settings
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/SettingsState"
+                "400":
+                    description: Invalid request body
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+
+    /api/system/health:
+        get:
+            tags: [System]
+            summary: Get device health metrics
+            operationId: getSystemHealth
+            responses:
+                "200":
+                    description: Runtime health metrics
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/SystemHealthResponse"
+
+components:
+    schemas:
+        ErrorResponse:
+            type: object
+            required: [error]
+            properties:
+                error:
+                    type: string
+
+        LedMode:
+            type: string
+            enum:
+                - off
+                - solid
+                - rainbow
+                - breathing
+                - chase
+                - sparkle
+                - fire
+                - wave
+
+        LedState:
+            type: object
+            required:
+                - mode
+                - brightnessPercent
+                - speedPercent
+                - red
+                - green
+                - blue
+            properties:
+                mode:
+                    $ref: "#/components/schemas/LedMode"
+                brightnessPercent:
+                    type: integer
+                    minimum: 0
+                    maximum: 100
+                speedPercent:
+                    type: integer
+                    minimum: 0
+                    maximum: 100
+                red:
+                    type: integer
+                    minimum: 0
+                    maximum: 255
+                green:
+                    type: integer
+                    minimum: 0
+                    maximum: 255
+                blue:
+                    type: integer
+                    minimum: 0
+                    maximum: 255
+
+        LedModePatch:
+            type: object
+            required: [mode]
+            additionalProperties: false
+            properties:
+                mode:
+                    $ref: "#/components/schemas/LedMode"
+
+        LedSolidColorPatch:
+            type: object
+            required: [red, green, blue]
+            additionalProperties: false
+            properties:
+                red:
+                    type: integer
+                    minimum: 0
+                    maximum: 255
+                green:
+                    type: integer
+                    minimum: 0
+                    maximum: 255
+                blue:
+                    type: integer
+                    minimum: 0
+                    maximum: 255
+
+        LedBrightnessPatch:
+            type: object
+            required: [brightnessPercent]
+            additionalProperties: false
+            properties:
+                brightnessPercent:
+                    type: integer
+                    minimum: 0
+                    maximum: 100
+
+        LedSpeedPatch:
+            type: object
+            required: [speedPercent]
+            additionalProperties: false
+            properties:
+                speedPercent:
+                    type: integer
+                    minimum: 0
+                    maximum: 100
+
+        SettingsState:
+            type: object
+            required: [ledCount]
+            properties:
+                ledCount:
+                    type: integer
+                    minimum: 0
+
+        SettingsPatch:
+            type: object
+            required: [ledCount]
+            additionalProperties: false
+            properties:
+                ledCount:
+                    type: integer
+                    minimum: 0
+                    description: Must not exceed firmware GLOBAL_LED_LIMIT.
+
+        WiFiConnectPatch:
+            type: object
+            required: [ssid, password]
+            additionalProperties: false
+            properties:
+                ssid:
+                    type: string
+                password:
+                    type: string
+
+        WiFiStaStatus:
+            type: object
+            required: [ssid, ip, rssi]
+            properties:
+                ssid:
+                    type: string
+                ip:
+                    type: string
+                rssi:
+                    type: integer
+
+        WiFiApStatus:
+            type: object
+            required: [ssid, ip]
+            properties:
+                ssid:
+                    type: string
+                ip:
+                    type: string
+
+        WifiStatusResponse:
+            type: object
+            required: [sta, ap]
+            properties:
+                sta:
+                    oneOf:
+                        - $ref: "#/components/schemas/WiFiStaStatus"
+                        - type: "null"
+                ap:
+                    oneOf:
+                        - $ref: "#/components/schemas/WiFiApStatus"
+                        - type: "null"
+
+        WifiScanNetwork:
+            type: object
+            required: [ssid, rssi, channel, auth]
+            properties:
+                ssid:
+                    type: string
+                rssi:
+                    type: integer
+                channel:
+                    type: integer
+                auth:
+                    type: string
+                    enum:
+                        - open
+                        - wep
+                        - wpa_psk
+                        - wpa2_psk
+                        - wpa_wpa2_psk
+                        - wpa2_enterprise
+                        - wpa3_psk
+                        - wpa2_wpa3_psk
+                        - wapi_psk
+                        - owe
+                        - unknown
+
+        WifiScanStartedResponse:
+            type: object
+            required: [status]
+            properties:
+                status:
+                    type: string
+                    const: started
+
+        WifiScanRunningResponse:
+            type: object
+            required: [status]
+            properties:
+                status:
+                    type: string
+                    const: running
+
+        WifiScanCompleteResponse:
+            type: object
+            required: [status, count, networks]
+            properties:
+                status:
+                    type: string
+                    const: complete
+                count:
+                    type: integer
+                    minimum: 0
+                networks:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/WifiScanNetwork"
+
+        SystemHealthResponse:
+            type: object
+            required:
+                - cpuTempC
+                - uptimeMs
+                - uptimeSec
+                - freeHeapBytes
+                - minFreeHeapBytes
+                - ledCount
+                - chipModel
+                - chipRevision
+            properties:
+                cpuTempC:
+                    type: number
+                uptimeMs:
+                    type: integer
+                    minimum: 0
+                uptimeSec:
+                    type: integer
+                    minimum: 0
+                freeHeapBytes:
+                    type: integer
+                    minimum: 0
+                minFreeHeapBytes:
+                    type: integer
+                    minimum: 0
+                ledCount:
+                    type: integer
+                    minimum: 0
+                chipModel:
+                    type: string
+                chipRevision:
+                    type: integer
+                    minimum: 0

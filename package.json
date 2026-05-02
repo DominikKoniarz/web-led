@@ -5,6 +5,9 @@
     "scripts": {
         "build": "pnpm --filter web build",
         "dev": "pnpm --filter web dev",
+        "api:docs:build": "redocly build-docs docs/api/openapi.yaml -o docs/api/index.html",
+        "api:docs:path": "node scripts/print-api-doc-url.mjs",
+        "api:docs": "pnpm run api:docs:build && pnpm run api:docs:path",
         "pio:build": "pio run",
         "pio:upload": "pio run -t upload",
         "pio:monitor": "pio run -t monitor",
@@ -12,6 +15,7 @@
         "pio:compiledb": "pio run -t compiledb"
     },
     "devDependencies": {
+        "@redocly/cli": "^2.30.0",
         "prettier": "^3.8.1",
         "prettier-plugin-organize-imports": "^4.3.0",
         "prettier-plugin-tailwindcss": "^0.7.2"
