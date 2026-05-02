@@ -54,12 +54,51 @@ For firmware changes:
 
 1. Run `pio run` from repository root.
 2. If HTTP router endpoints changed, update the Bruno collection under `bruno/web-led/` to match.
-3. Report success/failure and relevant warnings.
+3. If HTTP routes, request bodies, or response schemas changed, update `docs/api/openapi.yaml` to reflect the new contract.
+4. After updating OpenAPI spec, run `pnpm run api:docs` to rebuild and verify the documentation generates without errors.
+5. Ensure `docs/api/openapi.yaml`, Bruno requests, and firmware implementation stay in sync.
+6. Report success/failure and relevant warnings.
 
 For web changes:
 
 1. Run the applicable workspace command from `web/`.
 2. Report success/failure.
+
+## API Documentation Maintenance
+
+The HTTP API contract is documented in OpenAPI format at `docs/api/openapi.yaml`.
+
+### When to Update Docs
+
+Update the OpenAPI spec when:
+
+- Adding a new HTTP route to firmware
+- Changing request body structure or validation rules
+- Changing response schema or status codes
+- Renaming fields in request or response payloads
+- Adding or removing optional fields
+
+### Update Workflow
+
+1. Make changes to `esp/src/web_server.cpp` (routes) and/or `esp/src/json_codec.cpp` (request/response schemas).
+2. Update `docs/api/openapi.yaml` with matching endpoint, request body, and response schema changes.
+3. Update Bruno request definitions under `bruno/web-led/` to match new payloads.
+4. Build and validate docs: `pnpm run api:docs`
+5. Commit all three together: firmware, spec, and Bruno collection.
+
+### Rebuilding Docs
+
+To rebuild the static HTML documentation:
+
+```bash
+pnpm run api:docs
+```
+
+This will:
+
+- Rebuild `docs/api/index.html` from the OpenAPI spec
+- Print the absolute file path and file:// URL for browser access
+- Display any validation errors in the spec
 
 ## Planning Expectations
 
