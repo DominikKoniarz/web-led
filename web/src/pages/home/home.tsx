@@ -1,35 +1,11 @@
-import { useEffect, useState } from "react";
+import LedControls from "@/pages/home/components/led-controls";
+import { LEDModesPanel } from "@/pages/home/components/led-modes-panel";
 
 export function HomeRouteComponent() {
-    const [count, setCount] = useState(0);
-
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCount((prev) => prev + 1);
-        }, 1000);
-
-        return () => clearInterval(timer);
-    }, []);
-
     return (
-        <div className="bg-red-500 px-2 text-white">
-            <h1>Hello World a</h1>
-            <button
-                className="cursor-pointer"
-                onClick={() => setCount((prev) => prev + 1)}
-            >
-                Increment
-            </button>
-            <button
-                className="cursor-pointer"
-                onClick={() => setCount((prev) => prev - 1)}
-            >
-                Decrement
-            </button>
-            <button className="cursor-pointer" onClick={() => setCount(0)}>
-                Reset
-            </button>
-            <p>Count: {count}</p>
+        <div className="container mx-auto space-y-6 px-4 py-6">
+            <LEDModesPanel />
+            <LedControls />
         </div>
     );
 }
