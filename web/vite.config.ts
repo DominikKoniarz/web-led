@@ -1,11 +1,17 @@
 import tailwindcss from "@tailwindcss/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
+import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import compression from "vite-plugin-compression2";
 
 // https://vite.dev/config/
 export default defineConfig({
     plugins: [
+        tanstackRouter({
+            target: "react",
+            autoCodeSplitting: true,
+        }),
         react(),
         tailwindcss(),
         compression({
@@ -14,6 +20,11 @@ export default defineConfig({
             exclude: [/index\.html$/],
         }),
     ],
+    resolve: {
+        alias: {
+            "@": fileURLToPath(new URL("./src", import.meta.url)),
+        },
+    },
     build: {
         outDir: "../dist/web",
         emptyOutDir: true,

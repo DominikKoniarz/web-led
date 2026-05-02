@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-function App() {
+export function HomeRouteComponent() {
     const [count, setCount] = useState(0);
 
     useEffect(() => {
@@ -33,5 +33,3 @@ function App() {
         </div>
     );
 }
-
-export default App;
