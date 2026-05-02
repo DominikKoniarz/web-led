@@ -1,4 +1,4 @@
-import { RootLayoutComponent } from "@/pages/root-layout";
+import { RootLayoutComponent } from "@/layouts/root/root-layout";
 import { createRootRoute } from "@tanstack/react-router";
 
 export const Route = createRootRoute({
