@@ -3,5 +3,19 @@
     "clangd.path": "clangd",
     "clangd.enable": false,
 
-    "prettier.configPath": "./prettier.config.json"
+    "prettier.configPath": "./prettier.config.json",
+
+    "js/ts.preferences.importModuleSpecifier": "non-relative",
+    "js/ts.preferences.preferTypeOnlyAutoImports": true,
+    "js/ts.tsdk.path": "./web/node_modules/typescript/lib",
+
+    "files.readonlyInclude": {
+        "**/routeTree.gen.ts": true
+    },
+    "files.watcherExclude": {
+        "**/routeTree.gen.ts": true
+    },
+    "search.exclude": {
+        "**/routeTree.gen.ts": true
+    }
 }
