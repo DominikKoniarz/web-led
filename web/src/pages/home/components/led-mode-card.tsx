@@ -47,7 +47,7 @@ export function LEDModeCard({ mode, isSelected, onSelect }: LEDModeCardProps) {
         <button
             onClick={onSelect}
             className={cn(
-                "group relative flex flex-col items-center gap-3 rounded-lg border p-4 text-left transition-all",
+                "group relative flex cursor-pointer flex-col items-center gap-3 rounded-lg border p-4 text-left transition-all",
                 "hover:border-primary/50 hover:bg-secondary/50",
                 isSelected
                     ? "border-primary bg-primary/10"
