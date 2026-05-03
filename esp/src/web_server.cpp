@@ -471,6 +471,8 @@ void setupWebServer() {
 
     server.on("/api/system/health", HTTP_GET, handleSystemHealthGet);
 
+    server.onNotFound(handleRoot);
+
     server.begin();
 
     Serial.println("[HTTP] Server started on port 80 (async)");
