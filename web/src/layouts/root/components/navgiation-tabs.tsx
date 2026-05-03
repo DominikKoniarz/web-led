@@ -12,6 +12,18 @@ export default function NavigationTabs() {
         });
     };
 
+    const preloadPathChunks = async (
+        pathname: keyof typeof router.routesByPath,
+    ) => {
+        const route = router.routesByPath[pathname];
+
+        try {
+            await router.loadRouteChunk(route);
+        } catch (error) {
+            void error;
+        }
+    };
+
     return (
         <main className="container mx-auto px-4 py-6">
             <Tabs
@@ -20,13 +32,18 @@ export default function NavigationTabs() {
                 className="space-y-6"
             >
                 <TabsList className="grid w-full max-w-md grid-cols-2">
-                    <TabsTrigger value="/" className="flex items-center gap-2">
+                    <TabsTrigger
+                        value="/"
+                        className="flex items-center gap-2"
+                        onMouseEnter={() => preloadPathChunks("/")}
+                    >
                         <Lightbulb className="h-4 w-4" />
                         LED Modes
                     </TabsTrigger>
                     <TabsTrigger
                         value="/settings"
                         className="flex items-center gap-2"
+                        onMouseEnter={() => preloadPathChunks("/settings")}
                     >
                         <Settings className="h-4 w-4" />
                         Settings
