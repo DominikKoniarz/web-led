@@ -5,13 +5,18 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { ledModes } from "@/lib/mock-data";
+import { LEDModeCard } from "@/pages/home/components/led-mode-card";
+import { ledOptions } from "@/pages/home/data/led";
+import useLEDModesPanel from "@/pages/home/hooks/use-led-modes-panel";
+import type { LEDMode } from "@/pages/home/types/led";
 import { Palette } from "lucide-react";
-import { useState } from "react";
-import { LEDModeCard } from "./led-mode-card";
 
-export function LEDModesPanel() {
-    const [selectedMode, setSelectedMode] = useState<string>("solid");
+type Props = {
+    mode: LEDMode;
+};
+
+export function LEDModesPanel({ mode }: Props) {
+    const { onSelect, selectedMode } = useLEDModesPanel(mode);
 
     return (
         <Card>
@@ -26,12 +31,12 @@ export function LEDModesPanel() {
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                    {ledModes.map((mode) => (
+                    {ledOptions.map((option) => (
                         <LEDModeCard
-                            key={mode.id}
-                            mode={mode}
-                            isSelected={selectedMode === mode.id}
-                            onSelect={() => setSelectedMode(mode.id)}
+                            key={option.mode}
+                            mode={option}
+                            isSelected={selectedMode === option.mode}
+                            onSelect={() => onSelect(option.mode)}
                         />
                     ))}
                 </div>
