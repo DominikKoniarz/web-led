@@ -1,3 +1,4 @@
+import { env } from "@/env";
 import LedControls from "@/pages/home/components/led-controls";
 import { LEDModesPanel } from "@/pages/home/components/led-modes-panel";
 import { useQuery } from "@tanstack/react-query";
@@ -48,7 +49,7 @@ export function HomeRouteComponent() {
         isLoading: isLedStateLoading,
     } = useQuery({
         queryKey: ["leds"],
-        queryFn: () => fetchJson<LedState>("http://webled.local/api/leds"),
+        queryFn: () => fetchJson<LedState>(`${env.VITE_API_BASE_URL}/leds`),
     });
 
     const {
@@ -58,7 +59,7 @@ export function HomeRouteComponent() {
     } = useQuery({
         queryKey: ["settings"],
         queryFn: () =>
-            fetchJson<SettingsState>("http://webled.local/api/settings"),
+            fetchJson<SettingsState>(`${env.VITE_API_BASE_URL}/settings`),
     });
 
     useEffect(() => {
