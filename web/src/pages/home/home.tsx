@@ -23,7 +23,10 @@ export function HomeRouteComponent() {
     return (
         <div className="container mx-auto space-y-6 px-4 py-6">
             <LEDModesPanel mode={ledState.mode} />
-            <LedControls />
+            <LedControls
+                brightnessPercent={ledState.brightnessPercent}
+                speedPercent={ledState.speedPercent}
+            />
         </div>
     );
 }

@@ -27,7 +27,7 @@ export function HomeSkeleton() {
                         {Array.from({ length: 8 }).map((_, index) => (
                             <div
                                 key={index}
-                                className="flex min-h-[132px] flex-col items-center justify-center rounded-xl border p-4"
+                                className="flex min-h-33 flex-col items-center justify-center rounded-xl border p-4"
                             >
                                 <Skeleton className="mb-3 h-10 w-10 rounded-lg" />
                                 <Skeleton className="mb-2 h-4 w-20" />
