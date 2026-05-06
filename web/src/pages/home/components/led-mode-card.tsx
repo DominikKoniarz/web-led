@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import type { LEDOption } from "@/pages/home/types/led";
 import {
     Check,
     Circle,
@@ -11,14 +12,6 @@ import {
     Zap,
 } from "lucide-react";
 import type { CSSProperties } from "react";
-
-interface LEDMode {
-    id: string;
-    name: string;
-    description: string;
-    icon: string;
-    color?: string;
-}
 
 const iconMap: Record<
     string,
@@ -35,7 +28,7 @@ const iconMap: Record<
 };
 
 interface LEDModeCardProps {
-    mode: LEDMode;
+    mode: LEDOption;
     isSelected: boolean;
     onSelect: () => void;
 }
