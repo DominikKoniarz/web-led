@@ -19,7 +19,6 @@ export function HomeRouteComponent() {
         return <HomeSkeleton />;
     }
 
-    console.log(ledState.mode);
     return (
         <div className="container mx-auto space-y-6 px-4 py-6">
             <LEDModesPanel mode={ledState.mode} />

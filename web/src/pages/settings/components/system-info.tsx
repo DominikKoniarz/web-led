@@ -22,7 +22,6 @@ export default function SystemInfo() {
         //todo error
         return null;
     }
-    console.log(data);
     const systemInfoItems = [
         { label: "Firmware Version", value: "v1.0.0" },
         { label: "Chip", value: data?.chipModel ?? "N/A" },
