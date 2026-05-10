@@ -1,47 +1,94 @@
-import { cn } from "@/lib/utils";
-import SignalIcon from "@/pages/settings/components/signal-icon";
+import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import NetworkItem from "@/pages/settings/components/network-item";
+import useWifiConnect from "@/pages/settings/hooks/use-wifi-connect";
 import type { Network } from "@/pages/settings/types/wifi";
-import { Lock, Unlock } from "lucide-react";
+import { useState } from "react";
 
 type Props = {
     networks: Network[];
 };
 
 export default function AvailableNetworksList({ networks }: Props) {
+    const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(
+        null,
+    );
+    const [password, setPassword] = useState("");
+
+    const { wifiConnect } = useWifiConnect();
+
     return (
         <div className="space-y-2">
             {networks.map((network, index) => (
-                <button
-                    key={`${network.ssid}-${index}`}
-                    type="button"
-                    className={cn(
-                        "flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors",
-                        "hover:border-primary/50 hover:bg-secondary/50",
-                    )}
-                >
-                    <div className="flex items-center gap-3">
-                        <SignalIcon rssi={network.rssi} />
-                        <span className="text-foreground font-medium">
-                            {network.ssid}
-                        </span>
-
-                        {/* {connectedSsid === network.ssid && (
-                            <Badge
-                                variant="outline"
-                                className="border-success/50 bg-success/10 text-success"
-                            >
-                                Connected
-                            </Badge>
-                        )} */}
-                    </div>
-                    <div className="flex items-center gap-2">
-                        {network.auth !== "open" ? (
-                            <Lock className="text-muted-foreground h-4 w-4" />
-                        ) : (
-                            <Unlock className="text-muted-foreground h-4 w-4" />
-                        )}
-                    </div>
-                </button>
+                <>
+                    <NetworkItem
+                        key={`${network.ssid}-${index}`}
+                        network={network}
+                        index={index}
+                        onSelect={() => setSelectedNetwork(network)}
+                    />
+                    <Dialog
+                        open={selectedNetwork !== null}
+                        onOpenChange={(open) => {
+                            if (!open) setSelectedNetwork(null);
+                        }}
+                    >
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>
+                                    Connect to {selectedNetwork?.ssid}
+                                </DialogTitle>
+                                <DialogDescription>
+                                    Enter the password for this network
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="wifi-password">
+                                        Password
+                                    </Label>
+                                    <Input
+                                        id="wifi-password"
+                                        type="password"
+                                        placeholder="Enter WiFi password"
+                                        value={password}
+                                        onChange={(e) =>
+                                            setPassword(e.target.value)
+                                        }
+                                    />
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setSelectedNetwork(null)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    onClick={() =>
+                                        wifiConnect.mutate({
+                                            ssid: network.ssid,
+                                            password: password,
+                                        })
+                                    }
+                                    disabled={!password}
+                                >
+                                    Connect
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </>
             ))}
         </div>
     );
