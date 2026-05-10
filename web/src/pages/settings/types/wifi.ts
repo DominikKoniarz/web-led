@@ -35,3 +35,19 @@ export type Network = {
     channel: number;
     auth: WifiAuth;
 };
+
+type WifiStaStatus = {
+    ssid: string;
+    ip: string;
+    rssi: number;
+};
+
+type WifiApStatus = {
+    ssid: string;
+    ip: string;
+};
+
+export type WifiStatus = {
+    sta: WifiStaStatus;
+    ap: WifiApStatus;
+};
