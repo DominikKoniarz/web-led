@@ -1,5 +1,6 @@
+import { SignalHigh, SignalLow, SignalMedium } from "lucide-react";
+
 import { cn } from "@/lib/utils";
-import { Signal } from "lucide-react";
 
 function getSignalStrength(rssi: number): "strong" | "medium" | "weak" {
     if (rssi > -50) return "strong";
@@ -7,16 +8,28 @@ function getSignalStrength(rssi: number): "strong" | "medium" | "weak" {
     return "weak";
 }
 
+const icons = {
+    strong: SignalHigh,
+    medium: SignalMedium,
+    weak: SignalLow,
+};
+
+const colors = {
+    strong: "text-success",
+    medium: "text-warning",
+    weak: "text-destructive",
+};
+
 export default function SignalIcon({ rssi }: { rssi: number }) {
     const strength = getSignalStrength(rssi);
+
+    const Icon = icons[strength];
+    const color = colors[strength];
+
     return (
-        <Signal
-            className={cn(
-                "h-4 w-4",
-                strength === "strong" && "text-success",
-                strength === "medium" && "text-warning",
-                strength === "weak" && "text-destructive",
-            )}
-        />
+        <div className="relative h-4 w-4">
+            <SignalHigh className="absolute inset-0 h-4 w-4 opacity-20" />
+            <Icon className={cn("absolute inset-0 h-4 w-4", color)} />
+        </div>
     );
 }
