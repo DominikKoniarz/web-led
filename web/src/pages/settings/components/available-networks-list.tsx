@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
+import SignalIcon from "@/pages/settings/components/signal-icon";
 import type { Network } from "@/pages/settings/types/wifi";
-import { Lock, Signal, Unlock } from "lucide-react";
+import { Lock, Unlock } from "lucide-react";
 
 type Props = {
     networks: Network[];
@@ -19,7 +20,7 @@ export default function AvailableNetworksList({ networks }: Props) {
                     )}
                 >
                     <div className="flex items-center gap-3">
-                        <Signal className="text-success h-4 w-4" />
+                        <SignalIcon rssi={network.rssi} />
                         <span className="text-foreground font-medium">
                             {network.ssid}
                         </span>
@@ -33,7 +34,6 @@ export default function AvailableNetworksList({ networks }: Props) {
                             </Badge>
                         )} */}
                     </div>
-
                     <div className="flex items-center gap-2">
                         {network.auth !== "open" ? (
                             <Lock className="text-muted-foreground h-4 w-4" />
