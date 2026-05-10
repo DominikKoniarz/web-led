@@ -39,6 +39,7 @@ export function SettingsRouteComponent() {
         //todo error
         return;
     }
+
     return (
         <div className="container mx-auto space-y-6 px-4 py-6">
             <AvailableNetworks
@@ -50,7 +51,7 @@ export function SettingsRouteComponent() {
                     console.log("selected:", network);
                 }}
             />
-            <DeviceSettings />
+            <DeviceSettings ledCount={settingsState.ledCount} />
             <SystemInfo />
         </div>
     );

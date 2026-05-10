@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
     Card,
     CardContent,
@@ -7,9 +8,21 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import useLEDCount from "@/pages/settings/hooks/use-led-count";
 import { Settings } from "lucide-react";
 
-export default function DeviceSettings() {
+type Props = {
+    ledCount: number;
+};
+
+export default function DeviceSettings({ ledCount }: Props) {
+    const {
+        localLEDCount,
+        ledMutation,
+        isChanged,
+        onLEDCountChange,
+        saveLEDCount,
+    } = useLEDCount(ledCount);
     return (
         <Card>
             <CardHeader>
@@ -25,12 +38,24 @@ export default function DeviceSettings() {
                     <Input
                         id="led-count"
                         type="number"
-                        defaultValue="60"
+                        min={1}
+                        max={120}
+                        onChange={(e) => onLEDCountChange(e.target.value)}
+                        value={localLEDCount.toString()}
                         placeholder="Number of LEDs"
                     />
                     <p className="text-muted-foreground text-xs">
-                        Total number of LEDs in your strip
+                        Total number of LEDs in your strip (max is 120)
                     </p>
+                </div>
+                <div className="flex justify-end">
+                    <Button
+                        className="bg-white"
+                        disabled={!isChanged || ledMutation.isPending}
+                        onClick={saveLEDCount}
+                    >
+                        Save Settings
+                    </Button>
                 </div>
             </CardContent>
         </Card>
