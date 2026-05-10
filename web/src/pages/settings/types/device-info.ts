@@ -1,6 +1,6 @@
 export type DeviceInfo = {
     cpuTempC: number;
-    upTimeSec: number;
+    uptimeSec: number;
     chipModel: string;
-    freeHeapByte: number;
+    freeHeapBytes: number;
 };
