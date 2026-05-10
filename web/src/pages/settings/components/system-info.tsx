@@ -6,9 +6,33 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import SystemInfoSkeleton from "@/pages/settings/components/system-info-skeleton";
+import useDeviceInfo from "@/pages/settings/hooks/use-device-info";
+import { formatBytes } from "@/pages/settings/lib/formatBytes";
+import { formatUptime } from "@/pages/settings/lib/formatUptime";
 import { Info, RotateCcw } from "lucide-react";
 
 export default function SystemInfo() {
+    const { data, error, isLoading } = useDeviceInfo();
+
+    if (isLoading || !data) {
+        return <SystemInfoSkeleton />;
+    }
+    if (error) {
+        //todo error
+        return null;
+    }
+    console.log(data);
+    const systemInfoItems = [
+        { label: "Firmware Version", value: "v1.0.0" },
+        { label: "Chip", value: data?.chipModel ?? "N/A" },
+        {
+            label: "CPU Temperature",
+            value: data?.cpuTempC ? `${data.cpuTempC.toFixed(1)} °C` : "N/A",
+        },
+        { label: "Uptime", value: formatUptime(data.uptimeSec) },
+        { label: "Free memory", value: formatBytes(data.freeHeapBytes) },
+    ];
     return (
         <Card>
             <CardHeader>
@@ -22,28 +46,19 @@ export default function SystemInfo() {
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="bg-secondary/50 grid gap-2 rounded-lg p-4 text-sm">
-                    <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">
-                            Firmware Version
-                        </span>
-                        <span className="text-foreground font-mono">
-                            v1.0.0
-                        </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Chip</span>
-                        <span className="text-foreground font-mono">
-                            ESP32-WROOM
-                        </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">
-                            Free Memory
-                        </span>
-                        <span className="text-foreground font-mono">
-                            245 KB
-                        </span>
-                    </div>
+                    {systemInfoItems.map((item, index) => (
+                        <div
+                            key={index}
+                            className="flex items-center justify-between"
+                        >
+                            <span className="text-muted-foreground">
+                                {item.label}
+                            </span>
+                            <span className="text-foreground font-mono">
+                                {item.value}
+                            </span>
+                        </div>
+                    ))}
                 </div>
 
                 <Button variant="outline" className="w-full cursor-pointer">
