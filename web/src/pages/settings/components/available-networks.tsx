@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -8,29 +7,20 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Lock, RefreshCw, Signal, Unlock } from "lucide-react";
+import AvailableNetworksList from "@/pages/settings/components/available-networks-list";
+import AvailableNetworksListSkeleton from "@/pages/settings/components/available-networks-list-skeleton";
+import ClickToScan from "@/pages/settings/components/click-to-scan";
+import NetworkScanError from "@/pages/settings/components/network-scan-error";
+import useWifiScan from "@/pages/settings/hooks/use-wifi-scan";
+import { RefreshCw } from "lucide-react";
 
-export interface WifiNetwork {
-    ssid: string;
-    rssi: number;
-    secure: boolean;
-}
+export default function AvailableNetworksCard() {
+    const { data, error, isScanning, refetch } = useWifiScan();
 
-interface AvailableNetworksCardProps {
-    networks: WifiNetwork[];
-    connectedSsid?: string | null;
-    isScanning?: boolean;
-    onScan?: () => void;
-    onSelectNetwork?: (network: WifiNetwork) => void;
-}
+    if (error) {
+        return <NetworkScanError refetch={refetch} />;
+    }
 
-export default function AvailableNetworksCard({
-    networks,
-    connectedSsid,
-    isScanning = false,
-    onScan,
-    onSelectNetwork,
-}: AvailableNetworksCardProps) {
     return (
         <Card>
             <CardHeader>
@@ -44,7 +34,9 @@ export default function AvailableNetworksCard({
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={onScan}
+                        onClick={() => {
+                            void refetch();
+                        }}
                         disabled={isScanning}
                     >
                         <RefreshCw
@@ -57,44 +49,16 @@ export default function AvailableNetworksCard({
                     </Button>
                 </div>
             </CardHeader>
-
             <CardContent>
                 <div className="space-y-2">
-                    {networks.map((network) => (
-                        <button
-                            key={network.ssid}
-                            type="button"
-                            onClick={() => onSelectNetwork?.(network)}
-                            className={cn(
-                                "flex w-full items-center justify-between rounded-lg border p-3 text-left transition-colors",
-                                "hover:border-primary/50 hover:bg-secondary/50",
-                            )}
-                        >
-                            <div className="flex items-center gap-3">
-                                <Signal className="text-success h-4 w-4" />
-                                <span className="text-foreground font-medium">
-                                    {network.ssid}
-                                </span>
-
-                                {connectedSsid === network.ssid && (
-                                    <Badge
-                                        variant="outline"
-                                        className="border-success/50 bg-success/10 text-success"
-                                    >
-                                        Connected
-                                    </Badge>
-                                )}
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                {network.secure ? (
-                                    <Lock className="text-muted-foreground h-4 w-4" />
-                                ) : (
-                                    <Unlock className="text-muted-foreground h-4 w-4" />
-                                )}
-                            </div>
-                        </button>
-                    ))}
+                    {!data ? (
+                        <ClickToScan />
+                    ) : data.status === "started" ||
+                      data.status === "running" ? (
+                        <AvailableNetworksListSkeleton />
+                    ) : (
+                        <AvailableNetworksList networks={data.networks} />
+                    )}
                 </div>
             </CardContent>
         </Card>
