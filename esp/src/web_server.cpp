@@ -278,6 +278,9 @@ static void handleWifiConnectPost(AsyncWebServerRequest *request, uint8_t *data,
 
     request->send(204, "application/json");
 
+    // brief delay to ensure response is sent before WiFi disconnects
+    delay(1000);
+
     WiFi.begin(patch.ssid.c_str(), patch.password.c_str());
 }
 

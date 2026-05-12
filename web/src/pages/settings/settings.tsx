@@ -26,7 +26,9 @@ export function SettingsRouteComponent() {
             return (await response.json()) as WifiStatus;
         },
     });
-    console.log(data);
+
+    void data; // currently unused, remove later if used
+
     return (
         <div className="container mx-auto space-y-6 px-4 py-6">
             <AvailableNetworks />

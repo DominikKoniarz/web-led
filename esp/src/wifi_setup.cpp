@@ -16,6 +16,12 @@ static const String AP_PASSWORD = "webled-setup";
 static void onWiFiEvent(WiFiEvent_t event) {
     switch (event) {
     // STA events
+    case ARDUINO_EVENT_WIFI_READY:
+        Serial.println("[WiFi] WiFi interface ready");
+        break;
+    case ARDUINO_EVENT_WIFI_SCAN_DONE:
+        Serial.println("[WiFi] WiFi scan completed");
+        break;
     case ARDUINO_EVENT_WIFI_STA_START:
         Serial.println("[WiFi] STA started");
         break;
@@ -27,6 +33,9 @@ static void onWiFiEvent(WiFiEvent_t event) {
         break;
     case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
         Serial.println("[WiFi] STA disconnected (AutoReconnect will retry)");
+        break;
+    case ARDUINO_EVENT_WIFI_STA_LOST_IP:
+        Serial.println("[WiFi] STA lost IP");
         break;
     // AP events
     case ARDUINO_EVENT_WIFI_AP_START:
