@@ -6,7 +6,7 @@ import type { WifiStatus } from "@/pages/settings/types/wifi";
 import { useQuery } from "@tanstack/react-query";
 
 export function SettingsRouteComponent() {
-    const { data, error, isLoading } = useQuery({
+    const { data } = useQuery({
         queryKey: ["wifi-status"],
         queryFn: async () => {
             const response = await fetch(
