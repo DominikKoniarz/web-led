@@ -1,6 +1,7 @@
 #include "wifi_setup.h"
 #include "WiFi.h"
 #include "secrets.h"
+#include "state_service.h"
 #include <Arduino.h>
 
 static const String ssid = WIFI_SSID;
@@ -55,8 +56,19 @@ void setupWiFi() {
     WiFi.onEvent(onWiFiEvent);
 
     WiFi.setAutoReconnect(true);
-    WiFi.begin(ssid, password);
-    Serial.println("[WiFi] Called WiFi.begin() with SSID: " + ssid);
+    const AppState &state = stateServiceGet();
+    String staSsid = ssid;
+    String staPassword = password;
+    if (state.wifi.configured && state.wifi.ssid.length() > 0) {
+        staSsid = state.wifi.ssid;
+        staPassword = state.wifi.password;
+        Serial.println("[WiFi] Using persisted STA credentials");
+    } else {
+        Serial.println("[WiFi] Using built-in (compiled) STA credentials");
+    }
+
+    WiFi.begin(staSsid, staPassword);
+    Serial.println("[WiFi] Called WiFi.begin() for STA connection");
 
     // wait for connection, but don't block forever if credentials are wrong
     // unsigned long connectStartMs = millis();

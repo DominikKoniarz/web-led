@@ -28,11 +28,11 @@ struct LedState {
     RgbColor solidColor;
 };
 
-// struct NetworkState {
-//     bool dhcpEnabled;
-//     String ip;
-//     String subnet;
-// };
+struct WiFiCredentials {
+    bool configured;
+    String ssid;
+    String password;
+};
 
 struct SystemState {
     uint16_t ledCount;
@@ -40,7 +40,7 @@ struct SystemState {
 
 struct AppState {
     LedState led;
-    // NetworkState network;
+    WiFiCredentials wifi;
     SystemState system;
 };
 
@@ -55,6 +55,7 @@ void updateLedMode(LedMode mode);
 void updateLedBrightness(uint8_t brightness);
 void updateLedSpeed(uint16_t speed);
 void updateLedSolidColor(uint8_t red, uint8_t green, uint8_t blue);
+void updateWiFiCredentials(const String &ssid, const String &password);
 
 void updateSystemLedCount(uint16_t ledCount);
 

@@ -85,10 +85,12 @@ static void serializeState(JsonObject root, const AppState &state) {
     led["green"] = state.led.solidColor.green;
     led["blue"] = state.led.solidColor.blue;
 
-    // JsonObject network = root["network"].to<JsonObject>();
-    // network["dhcpEnabled"] = state.network.dhcpEnabled;
-    // network["ip"] = state.network.ip;
-    // network["subnet"] = state.network.subnet;
+    JsonObject wifi = root["wifi"].to<JsonObject>();
+    wifi["configured"] = state.wifi.configured;
+    if (state.wifi.configured) {
+        wifi["ssid"] = state.wifi.ssid;
+        wifi["password"] = state.wifi.password;
+    }
 
     JsonObject system = root["system"].to<JsonObject>();
     system["ledCount"] = state.system.ledCount;
@@ -122,18 +124,26 @@ static void deserializeState(const JsonObjectConst root, AppState &state) {
         }
     }
 
-    // JsonObjectConst network = root["network"].as<JsonObjectConst>();
-    // if (!network.isNull()) {
-    //     if (network["dhcpEnabled"].is<bool>()) {
-    //         state.network.dhcpEnabled = network["dhcpEnabled"].as<bool>();
-    //     }
-    //     if (network["ip"].is<const char *>()) {
-    //         state.network.ip = network["ip"].as<String>();
-    //     }
-    //     if (network["subnet"].is<const char *>()) {
-    //         state.network.subnet = network["subnet"].as<String>();
-    //     }
-    // }
+    JsonObjectConst wifi = root["wifi"].as<JsonObjectConst>();
+    if (!wifi.isNull()) {
+        bool configured = false;
+        if (wifi["configured"].is<bool>()) {
+            configured = wifi["configured"].as<bool>();
+        } else if (wifi["ssid"].is<const char *>() ||
+                   wifi["password"].is<const char *>()) {
+            configured = true;
+        }
+        if (configured && wifi["ssid"].is<const char *>() &&
+            wifi["password"].is<const char *>()) {
+            state.wifi.configured = true;
+            state.wifi.ssid = wifi["ssid"].as<String>();
+            state.wifi.password = wifi["password"].as<String>();
+        } else {
+            state.wifi.configured = false;
+            state.wifi.ssid = "";
+            state.wifi.password = "";
+        }
+    }
 
     JsonObjectConst system = root["system"].as<JsonObjectConst>();
     if (!system.isNull() && system["ledCount"].is<uint16_t>()) {
@@ -148,9 +158,11 @@ void stateServiceInitDefaults() {
     gState.led.speedPercent = 75;
     gState.led.solidColor = {.red = 15, .green = 128, .blue = 100};
 
-    // gState.network.dhcpEnabled = true;
-    // gState.network.ip = "0.0.0.0";
-    // gState.network.subnet = "255.255.255.0";
+    gState.wifi.configured = false;
+    gState.wifi.ssid = "";
+    gState.wifi.password = "";
+    // gState.wifi.ssid = WIFI_SSID;
+    // gState.wifi.password = WIFI_PASSWORD;
 
     gState.system.ledCount = 60;
 
@@ -257,6 +269,13 @@ void updateLedSolidColor(uint8_t red, uint8_t green, uint8_t blue) {
     gState.led.solidColor.red = red;
     gState.led.solidColor.green = green;
     gState.led.solidColor.blue = blue;
+
+    stateServiceMarkDirty();
+}
+void updateWiFiCredentials(const String &ssid, const String &password) {
+    gState.wifi.configured = true;
+    gState.wifi.ssid = ssid;
+    gState.wifi.password = password;
 
     stateServiceMarkDirty();
 }
