@@ -281,6 +281,7 @@ static void handleWifiConnectPost(AsyncWebServerRequest *request, uint8_t *data,
     // brief delay to ensure response is sent before WiFi disconnects
     delay(1000);
 
+    // TODO: dump data to the persistent storage
     WiFi.begin(patch.ssid.c_str(), patch.password.c_str());
 }
 
