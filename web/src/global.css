@@ -1,5 +1,12 @@
-@import url("https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Momo+Trust+Sans:wght@200..800&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&family=Momo+Trust+Sans:wght@200..800&display=swap");
+@font-face {
+    font-family: "Geist";
+    src: url("assets/Geist-VariableFont_wght.ttf");
+}
+
+@font-face {
+    font-family: "Geist Mono";
+    src: url("assets/Geist-Mono-VariableFont_wght.ttf");
+}
 
 @import "tailwindcss";
 @import "tw-animate-css";
