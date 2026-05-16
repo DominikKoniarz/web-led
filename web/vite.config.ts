@@ -17,6 +17,7 @@ export default defineConfig({
         compression({
             algorithms: ["gz"],
             deleteOriginalAssets: true,
+            // include: [/\.(js|css|ttf)$/],
             exclude: [/index\.html$/],
         }),
     ],

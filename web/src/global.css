@@ -5,7 +5,7 @@
 
 @font-face {
     font-family: "Geist Mono";
-    src: url("assets/Geist-Mono-VariableFont_wght.ttf");
+    src: url("assets/GeistMono-VariableFont_wght.ttf");
 }
 
 @import "tailwindcss";
