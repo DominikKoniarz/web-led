@@ -7,8 +7,10 @@
 
 namespace {
 
-constexpr uint8_t DATA_PIN = 8;
-constexpr EOrder COLOR_ORDER = GRB;
+constexpr uint8_t DATA_PIN_ON_BOARD = 8;
+constexpr uint8_t DATA_PIN_EXTERNAL = 19;
+constexpr EOrder COLOR_ORDER_ON_BOARD = GRB;
+constexpr EOrder COLOR_ORDER_EXTERNAL = RGB;
 
 CRGB gLeds[GLOBAL_LED_LIMIT];
 uint8_t gHeat[GLOBAL_LED_LIMIT];
@@ -205,7 +207,13 @@ void renderWave(uint16_t activeCount, uint16_t speedPercent,
 } // namespace
 
 void ledRuntimeInit() {
-    FastLED.addLeds<WS2812B, DATA_PIN, COLOR_ORDER>(gLeds, GLOBAL_LED_LIMIT);
+    // build in led
+    // FastLED.addLeds<WS2812B, DATA_PIN_ON_BOARD, COLOR_ORDER_ON_BOARD>(
+    //     gLeds, GLOBAL_LED_LIMIT);
+
+    // ws2815 led strip on pin
+    FastLED.addLeds<WS2815, DATA_PIN_EXTERNAL, COLOR_ORDER_EXTERNAL>(
+        gLeds, GLOBAL_LED_LIMIT);
     FastLED.setCorrection(TypicalLEDStrip);
     resetAnimationState();
     FastLED.show();
