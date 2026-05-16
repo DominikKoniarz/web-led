@@ -60,6 +60,15 @@ static void onWiFiEvent(WiFiEvent_t event) {
     case ARDUINO_EVENT_WIFI_AP_STOP:
         Serial.println("[WiFi] AP stopped");
         break;
+    case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
+        Serial.println("[WiFi] AP client connected");
+        break;
+    case ARDUINO_EVENT_WIFI_AP_STADISCONNECTED:
+        Serial.println("[WiFi] AP client disconnected");
+        break;
+    case ARDUINO_EVENT_WIFI_AP_STAIPASSIGNED:
+        Serial.println("[WiFi] AP client got IP assigned");
+        break;
     default:
         Serial.println("[WiFi] Unhandled event: " + String(event));
         break;
@@ -98,23 +107,24 @@ void setupWiFi() {
     // Serial.println("[WiFi] STA Connection attempt finished");
 
     // TODO: work here and only enable it when needed
-    if (WiFi.softAP(AP_SSID, AP_PASSWORD)) {
-        Serial.println("[WiFi] AP started with SSID: " + AP_SSID);
+    // if (WiFi.softAP(AP_SSID, AP_PASSWORD)) {
+    //     Serial.println("[WiFi] AP started with SSID: " + AP_SSID);
 
-        // set custom IP for AP
-        IPAddress apIP(10, 0, 0, 1);
-        IPAddress netMsk(255, 255, 255, 0);
-        WiFi.softAPConfig(apIP, apIP, netMsk);
-        Serial.println("[WiFi] AP Configured");
-        Serial.println("[WiFi] AP IP address: " + WiFi.softAPIP().toString());
-        Serial.println("[WiFi] AP Mask: " + WiFi.softAPSubnetMask().toString());
+    //     // set custom IP for AP
+    //     IPAddress apIP(10, 0, 0, 1);
+    //     IPAddress netMsk(255, 255, 255, 0);
+    //     WiFi.softAPConfig(apIP, apIP, netMsk);
+    //     Serial.println("[WiFi] AP Configured");
+    //     Serial.println("[WiFi] AP IP address: " +
+    //     WiFi.softAPIP().toString()); Serial.println("[WiFi] AP Mask: " +
+    //     WiFi.softAPSubnetMask().toString());
 
-        if (WiFi.softAPbandwidth(WIFI_BW_HT20)) {
-            Serial.println("[WiFi] AP bandwidth set to 20 MHz");
-        } else {
-            Serial.println("[WiFi] Failed to set AP bandwidth");
-        }
-    } else {
-        Serial.println("[WiFi] Failed to start AP");
-    }
+    //     if (WiFi.softAPbandwidth(WIFI_BW_HT20)) {
+    //         Serial.println("[WiFi] AP bandwidth set to 20 MHz");
+    //     } else {
+    //         Serial.println("[WiFi] Failed to set AP bandwidth");
+    //     }
+    // } else {
+    //     Serial.println("[WiFi] Failed to start AP");
+    // }
 }

@@ -4,5 +4,6 @@
 #include <Arduino.h>
 
 void setupWebServer();
+void logLittleFsHttpContents();
 
 #endif // WEB_SERVER_H

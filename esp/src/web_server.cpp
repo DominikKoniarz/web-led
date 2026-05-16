@@ -15,6 +15,49 @@ static unsigned long wifiScanCompletedAtMs = 0;
 
 static const unsigned long WIFI_SCAN_RESULT_MAX_AGE_MS = 15000;
 
+static void logLittleFsFile(const char *path) {
+    File f = LittleFS.open(path, "r");
+    if (!f || f.isDirectory()) {
+        if (f)
+            f.close();
+        Serial.printf("[HTTP] Missing file: %s\n", path);
+        return;
+    }
+
+    Serial.printf("[HTTP] File: %s (%u bytes)\n", path,
+                  static_cast<unsigned int>(f.size()));
+    f.close();
+}
+
+static void logLittleFsDir(const char *path) {
+    File dir = LittleFS.open(path, "r");
+    if (!dir || !dir.isDirectory()) {
+        if (dir)
+            dir.close();
+        Serial.printf("[HTTP] Missing directory: %s\n", path);
+        return;
+    }
+
+    Serial.printf("[HTTP] Directory: %s\n", path);
+
+    while (true) {
+        File entry = dir.openNextFile();
+        if (!entry)
+            break;
+
+        if (entry.isDirectory()) {
+            Serial.printf("[HTTP]  [dir] %s\n", entry.name());
+        } else {
+            Serial.printf("[HTTP]  %s (%u bytes)\n", entry.name(),
+                          static_cast<unsigned int>(entry.size()));
+        }
+
+        entry.close();
+    }
+
+    dir.close();
+}
+
 static void handleRoot(AsyncWebServerRequest *request) {
     File f = LittleFS.open("/index.html", "r");
 
@@ -37,9 +80,35 @@ static void handleRoot(AsyncWebServerRequest *request) {
     request->send(resp);
 }
 
+static void handleWebManifest(AsyncWebServerRequest *request) {
+    File f = LittleFS.open("/manifest.webmanifest", "r");
+
+    if (!f || f.isDirectory()) {
+        if (f)
+            f.close();
+        request->send(404);
+        return;
+    }
+
+    AsyncWebServerResponse *resp = request->beginChunkedResponse(
+        "application/manifest+json",
+        [f](uint8_t *buffer, size_t maxLen, size_t index) mutable -> size_t {
+            int n = f.read(buffer, maxLen);
+            if (n <= 0)
+                f.close();
+            return static_cast<size_t>(n > 0 ? n : 0);
+        });
+
+    request->send(resp);
+}
+
 static const char *contentTypeFromPath(const String &path) {
     if (path.endsWith(".js"))
         return "application/javascript";
+    if (path.endsWith(".webmanifest"))
+        return "application/manifest+json";
+    if (path.endsWith(".ttf"))
+        return "font/ttf";
     if (path.endsWith(".css"))
         return "text/css";
     if (path.endsWith(".woff2"))
@@ -113,7 +182,23 @@ static void handleAssets(AsyncWebServerRequest *request) {
         return;
     }
 
-    String pathGz = path + ".gz";
+    bool isTTF = path.endsWith(".ttf");
+
+    String pathGz = isTTF ? path : path + ".gz";
+
+    if (isTTF) {
+        if (!LittleFS.exists(path)) {
+            request->send(404);
+            return;
+        }
+
+        const char *contentType = contentTypeFromPath(path);
+        AsyncWebServerResponse *resp =
+            request->beginResponse(LittleFS, path, contentType);
+        resp->addHeader("Cache-Control", "public, max-age=31536000, immutable");
+        request->send(resp);
+        return;
+    }
 
     File f = LittleFS.open(pathGz, "r");
     if (!f || f.isDirectory()) {
@@ -446,12 +531,19 @@ static void handleSystemHealthGet(AsyncWebServerRequest *request) {
     request->send(200, "application/json", getSystemHealthJson(health));
 }
 
+void logLittleFsHttpContents() {
+    Serial.println("[HTTP] LittleFS static file list:");
+    logLittleFsFile("/index.html");
+    logLittleFsFile("/manifest.webmanifest");
+    logLittleFsDir("/assets");
+}
+
 void setupWebServer() {
     DefaultHeaders::Instance().addHeader("Connection", "keep-alive");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
 
     server.on("/", HTTP_GET, handleRoot);
-    // TODO: handle webmanifest (and favicon?)
+    server.on("/manifest.webmanifest", HTTP_GET, handleWebManifest);
     server.on("/assets/*", HTTP_GET, handleAssets);
 
     // leds

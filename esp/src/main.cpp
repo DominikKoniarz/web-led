@@ -15,6 +15,8 @@ void setup() {
         return;
     }
 
+    logLittleFsHttpContents();
+
     stateServiceInitDefaults();
     stateServiceLoadFromFs();
     ledRuntimeInit();
