@@ -27,6 +27,8 @@ export default function NetworkItem({ network }: NetworkItemProps) {
 
     const { wifiConnect } = useWifiConnect();
 
+    // TODO: add a toast after successful connection attempts
+
     return (
         <>
             <Dialog open={open} onOpenChange={setOpen}>

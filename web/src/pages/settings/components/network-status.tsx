@@ -32,13 +32,11 @@ export default function NetworkStatus() {
     const items = [
         {
             title: "Access Point Mode",
-            ssid: wifiStatus.ap.ssid,
-            ip: wifiStatus.ap.ip,
+            status: wifiStatus.ap,
         },
         {
             title: "Station Mode",
-            ssid: wifiStatus.sta.ssid,
-            ip: wifiStatus.sta.ip,
+            status: wifiStatus.sta,
         },
     ];
     return (
@@ -61,7 +59,7 @@ export default function NetworkStatus() {
                                     Network Name
                                 </span>
                                 <span className="text-foreground font-mono text-sm">
-                                    {item.ssid}
+                                    {item.status?.ssid ?? "Not connected"}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between">
@@ -69,7 +67,7 @@ export default function NetworkStatus() {
                                     IP Address
                                 </span>
                                 <span className="text-foreground font-mono text-sm">
-                                    {item.ip}
+                                    {item.status?.ip ?? "N/A"}
                                 </span>
                             </div>
                         </div>

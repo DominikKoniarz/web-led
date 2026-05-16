@@ -14,6 +14,21 @@ static const String AP_PASSWORD = "webled-setup";
 
 // static const unsigned short CONNECT_TIMEOUT_MS = 15000;
 
+static const char *wifiModeToString(wifi_mode_t mode) {
+    switch (mode) {
+    case WIFI_MODE_NULL:
+        return "null";
+    case WIFI_MODE_STA:
+        return "sta";
+    case WIFI_MODE_AP:
+        return "ap";
+    case WIFI_MODE_APSTA:
+        return "ap_sta";
+    default:
+        return "unknown";
+    }
+}
+
 static void onWiFiEvent(WiFiEvent_t event) {
     switch (event) {
     // STA events
@@ -56,6 +71,7 @@ void setupWiFi() {
     WiFi.onEvent(onWiFiEvent);
 
     WiFi.setAutoReconnect(true);
+
     const AppState &state = stateServiceGet();
     String staSsid = ssid;
     String staPassword = password;

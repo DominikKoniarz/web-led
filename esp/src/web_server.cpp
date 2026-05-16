@@ -84,6 +84,15 @@ static bool startAsyncWifiScan(String &error) {
     wifiScanCompletedAtMs = 0;
     WiFi.scanDelete();
 
+    // it is crucial to disable AutoReconnect when we are not connected to some
+    // WiFi network
+    // autoreconnecting keeps radio busy and we cannot perform WiFi scan at the
+    // same time
+    WiFi.setAutoReconnect(false);
+    Serial.println("[WiFi] Starting async scan... Disabled AutoReconnect");
+
+    delay(300); // give some time for the auto reconnect stop to proceed
+
     int16_t started = WiFi.scanNetworks(true, true);
     if (started == WIFI_SCAN_RUNNING || started >= 0) {
         return true;
@@ -397,6 +406,10 @@ static void handleWifiScanGet(AsyncWebServerRequest *request) {
 
         // remove scan results to free memory
         WiFi.scanDelete();
+
+        WiFi.setAutoReconnect(true);
+        Serial.println("[WiFi] Scan complete. Enabled AutoReconnect");
+
         return;
     }
 

@@ -48,6 +48,6 @@ type WifiApStatus = {
 };
 
 export type WifiStatus = {
-    sta: WifiStaStatus;
-    ap: WifiApStatus;
+    sta: WifiStaStatus | null;
+    ap: WifiApStatus | null;
 };
