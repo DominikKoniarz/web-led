@@ -2,7 +2,7 @@ import { env } from "@/env";
 import { hexToRgb } from "@/pages/home/lib/hex-to-rgb";
 import { rgbToHex } from "@/pages/home/lib/rgb-to-hex";
 import type { RGB } from "@/pages/home/types/rgb";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 const useLEDColor = (initialColor: { r: number; g: number; b: number }) => {
@@ -15,7 +15,7 @@ const useLEDColor = (initialColor: { r: number; g: number; b: number }) => {
     function handleColorChange(value: string) {
         setColor(value);
     }
-
+    const queryClient = useQueryClient();
     const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
     const previousColor = useRef<string>(color);
     const colorMutation = useMutation({
@@ -41,6 +41,9 @@ const useLEDColor = (initialColor: { r: number; g: number; b: number }) => {
                 );
             }
             return response.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["leds"] });
         },
     });
     const onColorChangeEvent = useEffectEvent((rgb: RGB) => {

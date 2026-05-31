@@ -3,6 +3,9 @@ import LEDColor from "@/pages/home/components/led-color";
 import LedControls from "@/pages/home/components/led-controls";
 import { LEDModesPanel } from "@/pages/home/components/led-modes-panel";
 import { useHomePageFetch } from "@/pages/home/hooks/use-home-page-fetch";
+import type { LEDMode } from "@/pages/home/types/led";
+
+const modesWithoutSolidColor: LEDMode[] = ["rainbow", "fire"];
 
 export function HomeRouteComponent() {
     const { ledState, ledStateError, isLedStateLoading } = useHomePageFetch();
@@ -19,12 +22,21 @@ export function HomeRouteComponent() {
     if (isLedStateLoading || !ledState) {
         return <HomeSkeleton />;
     }
+
+    const shouldShowColor = !modesWithoutSolidColor.includes(ledState.mode);
+
     return (
         <div className="container mx-auto space-y-6 px-4 py-6">
             <LEDModesPanel mode={ledState.mode} />
-            <LEDColor
-                color={{ r: ledState.red, g: ledState.green, b: ledState.blue }}
-            />
+            {shouldShowColor && (
+                <LEDColor
+                    color={{
+                        r: ledState.red,
+                        g: ledState.green,
+                        b: ledState.blue,
+                    }}
+                />
+            )}
             <LedControls
                 brightnessPercent={ledState.brightnessPercent}
                 speedPercent={ledState.speedPercent}

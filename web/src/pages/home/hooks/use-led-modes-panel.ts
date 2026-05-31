@@ -1,6 +1,6 @@
 import { env } from "@/env";
 import type { LEDMode } from "@/pages/home/types/led";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 const useLEDModesPanel = (mode: LEDMode) => {
@@ -8,7 +8,7 @@ const useLEDModesPanel = (mode: LEDMode) => {
 
     const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
     const previousMode = useRef<LEDMode>(selectedMode);
-
+    const queryClient = useQueryClient();
     const ledModeMutation = useMutation({
         mutationFn: async (newMode: LEDMode) => {
             const response = await fetch(
@@ -37,6 +37,9 @@ const useLEDModesPanel = (mode: LEDMode) => {
 
         //     return { previousMode };
         // },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["leds"] });
+        },
         onError: () => {
             // TODO: add toast
         },
