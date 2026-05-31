@@ -41,6 +41,51 @@ export function HomeSkeleton() {
             <Card>
                 <CardHeader>
                     <CardTitle>
+                        <Skeleton className="h-6 w-40" />
+                    </CardTitle>
+                    <CardDescription>
+                        <Skeleton className="h-4 w-48" />
+                    </CardDescription>
+                </CardHeader>
+
+                <CardContent className="space-y-8">
+                    <div className="space-y-4">
+                        <Skeleton className="h-4 w-12" />
+
+                        <div className="flex flex-wrap items-center gap-3">
+                            {Array.from({ length: 9 }).map((_, index) => (
+                                <Skeleton
+                                    key={index}
+                                    className="h-9 w-9 rounded-full"
+                                />
+                            ))}
+
+                            <Skeleton className="h-9 w-9 rounded-full" />
+
+                            <div className="w-full space-y-4">
+                                <Skeleton className="h-4 w-16" />
+                                <Skeleton className="h-32 w-full rounded-xl" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-4">
+                        <div className="flex gap-2">
+                            <Skeleton className="h-5 w-10" />
+                            <Skeleton className="h-5 w-24" />
+                        </div>
+
+                        <div className="flex gap-2">
+                            <Skeleton className="h-5 w-10" />
+                            <Skeleton className="h-5 w-18" />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>
                         <Skeleton className="h-6 w-20" />
                     </CardTitle>
                     <CardDescription>
