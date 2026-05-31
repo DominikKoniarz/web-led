@@ -296,7 +296,6 @@ static void handleLedsSolidColorPost(AsyncWebServerRequest *request,
         return;
     }
 
-    updateLedMode(LedMode::Solid);
     updateLedSolidColor(patch.red, patch.green, patch.blue);
 
     request->send(200, "application/json", getLedJson());
